@@ -18,11 +18,38 @@
         </nav>
     </header>
     <main role="main">
-        <!-- app goes here --> 
+        <!-- app goes here -->
+        <!-- Login Page -->
+        <div id="login-screen" style="margin:20px; padding: 20px; border: 1px solid black;">
+            <h1>Login</h1>
+            <form id="login-form">
+                Email: <input type="text"><br>
+                Password: <input type="password"><br>
+                <button>Log-in</button>
+                <button>Sign-up</button>
+            </form>
+        </div>
+
+        <!-- Registration Page -->
+        <div id="registration-screen" style="margin:20px; padding: 20px; border: 1px solid black">
+            <h1>Register</h1>
+            <form id="registration-form">
+                Email: <input type="text"><br>
+                Name: <input type="text"><br>
+                Password: <input type="password"><br>
+                Confirm Password: <input type="password"><br>
+                <button>Register</button>
+            </form>
+        </div>
+
     </main>
     <footer>
         <p>&copy; lurkforwork.com 2022</p>
     </footer>
     <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/login.js"></script>
+    <!-- <script type="module" src="src/rego.js"></script>
+    <script type="module" src="src/x.js"></script>
+    <script type="module" src="src/x.js"></script> -->
 </body>
 </html>
