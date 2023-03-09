@@ -6,15 +6,15 @@
     <title>LurkForWork</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- You can add your styles and scripts here -->
-    <link rel="stylesheet" type="text/css" media="screen" href="styles/provided.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="styles/global.css" />
 </head>
 <body>
     <!-- This is an example app structure, you can modify this as much as you choose --> 
     <header>
         <h1>lurkforwork.com</h1>
         <nav>
-            <li class="nav-item">Item</li>
-            <li class="nav-item">Item</li>
+            <li class="nav-login">Login</li>
+            <li class="nav-register">Register</li>
         </nav>
     </header>
     <main role="main">
@@ -22,24 +22,32 @@
         <!-- Login Page -->
         <div id="login-screen" style="margin:20px; padding: 20px; border: 1px solid black;">
             <h1>Login</h1>
-            <form id="login-form">
+            <form name="login_form">
                 Email: <input name="login_email" type="text"><br>
                 Password: <input name="login_pw" type="password"><br>
-                <button id="btn-login">Log-in</button>
-                <button id="btn-signup">Sign-up</button>
+                <button id="btn-login">Log in</button> <br>
+                Don't have an account?????????
+                <button id="btn-signup">Create new account</button>
             </form>
         </div>
 
         <!-- Registration Page -->
         <div id="registration-screen" style="margin:20px; padding: 20px; border: 1px solid black">
             <h1>Register</h1>
-            <form id="registration-form">
+            <form name ="rego_form">
                 Email: <input name="rego_email" type="text"><br>
                 Name: <input name="rego_name" type="text"><br>
                 Password: <input name="rego_pw" type="password"><br>
                 Confirm Password: <input name="rego_confirm_pw" type="password"><br>
-                <button id="btn-register">Register</button>
+                <button id="btn-register">Register</button> <br>
+                Already have an account?????????
+                <button>Sign In</button>
             </form>
+        </div>
+
+        <div style="margin:20px; padding: 20px; border: 1px solid black">
+            <p>Errorrorororor</p>
+            <button id="close-error">Close</button>
         </div>
 
     </main>
@@ -48,8 +56,8 @@
     </footer>
     <script type="module" src="src/main.js"></script>
     <script type="module" src="src/login.js"></script>
-    <!-- <script type="module" src="src/rego.js"></script>
-    <script type="module" src="src/x.js"></script>
-    <script type="module" src="src/x.js"></script> -->
+    <script type="module" src="src/rego.js"></script>
+    <!-- <script type="module" src="src/x.js"></script> -->
+    <!-- <script type="module" src="src/x.js"></script> -->
 </body>
 </html>
