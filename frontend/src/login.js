@@ -10,7 +10,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 
     event.preventDefault();
 
-    const data = {
+    const requestBody = {
         "email": loginEmail,
         "password": loginPw
     }
@@ -20,7 +20,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(requestBody),
     }
 
 
@@ -31,6 +31,8 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
                 alert(data.error);
             } else {
                 console.log('data is', data)
+                document.getElementById('token').innerText = data.token;
+                document.getElementById('userID').innerText = data.userId;
             }
         });
 });

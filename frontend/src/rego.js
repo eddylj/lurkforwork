@@ -19,7 +19,7 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
         return;
     }
 
-    const data = {
+    const requestBody = {
         "email": regoEmail,
         "password": regoPw,
         "name": regoName
@@ -30,7 +30,7 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(requestBody)
     }
 
 

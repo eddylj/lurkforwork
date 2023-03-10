@@ -13,6 +13,7 @@
     <header>
         <h1>lurkforwork.com</h1>
         <nav>
+            <li class="nav-logo"><img src="images/logo.png" style="height:30px"></li>
             <li class="nav-login">Login</li>
             <li class="nav-register">Register</li>
         </nav>
@@ -50,6 +51,13 @@
             <button id="close-error">Close</button>
         </div>
 
+        <!-- MAIN PAGE STUB CODE (what feed may look like)-->
+        <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
+            Token = <div id="token"></div>
+            UserId = <div id="userID"></div>
+            <button id="generate-feed">Generate Feed</button>
+        </div>
+
     </main>
     <footer>
         <p>&copy; lurkforwork.com 2022</p>
@@ -57,7 +65,7 @@
     <script type="module" src="src/main.js"></script>
     <script type="module" src="src/login.js"></script>
     <script type="module" src="src/rego.js"></script>
-    <!-- <script type="module" src="src/x.js"></script> -->
+    <script type="module" src="src/mainPage.js"></script>
     <!-- <script type="module" src="src/x.js"></script> -->
 </body>
 </html>
