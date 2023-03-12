@@ -1,5 +1,7 @@
+<<<<<<< frontend/index.html
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,41 +10,45 @@
     <!-- You can add your styles and scripts here -->
     <link rel="stylesheet" type="text/css" media="screen" href="styles/global.css" />
 </head>
+
 <body>
-    <!-- This is an example app structure, you can modify this as much as you choose --> 
+    <!-- This is an example app structure, you can modify this as much as you choose -->
     <header>
-        <h1>lurkforwork.com</h1>
-        <nav>
-            <li class="nav-logo"><img src="images/logo.png" style="height:30px"></li>
-            <li class="nav-login">Login</li>
-            <li class="nav-register">Register</li>
-        </nav>
+        <div id="nav">
+            <nav>
+                <a>LurkforWork</a>
+                <a class="nav-logo"><img src="images/logo.png" style="height:30px"></a>
+                <a><button id="login" class="nav-login">Login</button></a>
+                <a> <button id="register" class="nav-register">Register</button></a>
+            </nav>
+        </div>
+
     </header>
     <main role="main">
         <!-- app goes here -->
         <!-- Login Page -->
-        <div id="login-screen" style="margin:20px; padding: 20px; border: 1px solid black;">
+        <div id="login-screen" class="intro-screen">
             <h1>Login</h1>
             <form name="login_form">
-                Email: <input name="login_email" type="text"><br>
-                Password: <input name="login_pw" type="password"><br>
-                <button id="btn-login">Log in</button> <br>
-                Don't have an account?????????
-                <button id="btn-signup">Create new account</button>
+                <input name="login_email" type="text" placeholder="Email address"><br>
+                <input name="login_pw" type="password" placeholder="Password"><br>
+                <button id="btn-login" class="btn-submit">Login</button> <br>
+                Don't have an account?
+                <button id="btn-join" class="btn-leave">Join now</button>
             </form>
         </div>
 
         <!-- Registration Page -->
-        <div id="registration-screen" style="margin:20px; padding: 20px; border: 1px solid black">
+        <div id="rego-screen" class="intro-screen">
             <h1>Register</h1>
-            <form name ="rego_form">
-                Email: <input name="rego_email" type="text"><br>
-                Name: <input name="rego_name" type="text"><br>
-                Password: <input name="rego_pw" type="password"><br>
-                Confirm Password: <input name="rego_confirm_pw" type="password"><br>
-                <button id="btn-register">Register</button> <br>
-                Already have an account?????????
-                <button>Sign In</button>
+            <form name="rego_form">
+                <input name="rego_email" type="text" placeholder="Email address"><br>
+                <input name="rego_name" type="text" placeholder="Name"><br>
+                <input name="rego_pw" type="password" placeholder="Password"><br>
+                <input name="rego_confirm_pw" type="password" placeholder="Confirm Password"><br>
+                <button id="btn-register" class="btn-submit">Register</button> <br>
+                Already have an account?
+                <button id="btn-signin" class="btn-leave">Sign In</button>
             </form>
         </div>
 
@@ -52,13 +58,56 @@
         </div>
 
         <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
+        <div id="main-page">
+        <!-- <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             Token = <div id="token"></div>
             UserId = <div id="userID"></div>
             <button id="load-page">Load Page</button>
+            <button id="generate-feed">Generate Feed</button> -->
+        <!-- </div> -->
+            <div id="rawr">
+                <div id="feed">
+                    <p>Handy Wang<br>69/69</p>
+
+                    <div id="job">
+                        <!-- <div id="img"> -->
+                        <img src="logo.png" id="job-img">
+                        <!-- </div> -->
+                        <div id="job-content">
+                            <h5>Lil Bro (JOB)</h5><br>
+                            10/10/2000<br>
+                            <p>lil bro out here lil broing and going 8th every game</p>
+                        </div>
+                    </div>
+                    <div id="hi">
+                        <div id="likes">
+                            <button>liked</button><span>10 likes</span>
+                        </div>
+                        <div id="comments">10 comments</div>
+                    </div>
+                    <div id="comments">
+                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
+                        </div>
+                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
+                        </div>
+                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
+                        </div>
+                    </div>
+                    <div id="post-comment">
+                        <!-- <div id="comment-input"> -->
+                        <input placeholder="Add a comment" id="add-comment">
+                        <!-- </div> -->
+                        <button id="post-button">Post</button>
+                    </div>
+                    <p>
+                    </p>
+
+                </div>
+            </div>
+            Token = <div id="token"></div>
+            UserId = <div id="userID"></div>
             <button id="generate-feed">Generate Feed</button>
         </div>
-        
         <div id="profile-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             <h1>Profile Page</h1>
             <button id="load-user-info">Load User Info</button>
@@ -75,4 +124,5 @@
     <script type="module" src="src/mainPage.js"></script>
     <!-- <script type="module" src="src/x.js"></script> -->
 </body>
+
 </html>
