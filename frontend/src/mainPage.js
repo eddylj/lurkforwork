@@ -72,11 +72,43 @@ function generate() {
     jobContainer.appendChild(makeDiv("Number of Likes", numLikes));
     jobContainer.appendChild(makeDiv("Number of Comments", numComments));
 
+    
     jobContainer.appendChild(makeButton("👍 Like"));
     jobContainer.appendChild(makeButton("💬 Comment"));
+    
+    // Div with all the likes
+    let likesList = showLikes(post.likes);
+    jobContainer.appendChild(likesList);
+
+    // Div with all the comments
+    let commentsList = showComments(post.comments);
+    jobContainer.appendChild(commentsList);
 
     // Append to main page
     document.getElementById("main-page").appendChild(jobContainer)
+}
+function showLikes(list) {
+    const div = document.createElement("div");
+    div.innerText = "Likes\n";
+    for (const person of  list) {
+        const span = document.createElement("a");
+        span.innerText = person.userName + '\n';
+        span.setAttribute("href", "https://www.frankerfacez.com/emoticon/518858-KEWK");
+        div.appendChild(span);
+    }
+    return div;
+}
+
+function showComments(comments) {
+    const div = document.createElement("div");
+    div.innerText = "Comments\n";
+    for (const comment of comments) {
+        const commentDiv = document.createElement("div");
+        // ADD LINK
+        commentDiv.innerText = comment.userName + ": " + comment.comment;
+        div.appendChild(commentDiv);
+    }
+    return div;
 }
 
 function makeDiv(ind, val) {
