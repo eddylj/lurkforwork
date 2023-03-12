@@ -4,6 +4,16 @@ import { fileToDataUrl } from './helpers.js';
 
 const loginForm = document.forms.login_form;
 
+document.getElementById("login").addEventListener("click", () => {
+    var loginScreen = document.getElementById("login-screen");
+    if (loginScreen.style.display === "none") {
+        loginScreen.style.display = "block";
+    }
+    else loginScreen.style.display = "none";
+}
+);
+
+
 document.getElementById("btn-login").addEventListener("click", (event) => {
     const loginEmail = loginForm.login_email.value;
     const loginPw = loginForm.login_pw.value;
