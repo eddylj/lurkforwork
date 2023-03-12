@@ -1,4 +1,3 @@
-<<<<<<< frontend/index.html
 <!DOCTYPE html>
 <html>
 
@@ -52,62 +51,67 @@
             </form>
         </div>
 
-        <div style="margin:20px; padding: 20px; border: 1px solid black">
-            <p>Errorrorororor</p>
-            <button id="close-error">Close</button>
+        <!-- Error Popup -->
+        <div id="popup" class="error-popup">
+            <div class="popup-content">
+                <h3>ERROR!!!</h3>
+                <span class="close">&times;</span>
+                <div id="error-text"></div>
+            </div>
         </div>
 
         <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div id="main-page">
+        <div class="main-page">
         <!-- <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             Token = <div id="token"></div>
             UserId = <div id="userID"></div>
             <button id="load-page">Load Page</button>
             <button id="generate-feed">Generate Feed</button> -->
         <!-- </div> -->
-            <div id="rawr">
-                <div id="feed">
-                    <p>Handy Wang<br>69/69</p>
+            <div class="job-post">
+                <span class="hover-underline">Handy Wang</span>
+                <span class="job-post-date">Posted: 69/69</span>
 
-                    <div id="job">
-                        <!-- <div id="img"> -->
-                        <img src="logo.png" id="job-img">
-                        <!-- </div> -->
-                        <div id="job-content">
-                            <h5>Lil Bro (JOB)</h5><br>
-                            10/10/2000<br>
-                            <p>lil bro out here lil broing and going 8th every game</p>
-                        </div>
+                <div class="job-content">
+                    <!-- <div id="img"> -->
+                    <img src="logo.png" class="job-img">
+                    <!-- </div> -->
+                    <div class="job-description">
+                        <h5>Lil Bro (JOB)</h5><br>
+                        Start date: 10/10/2000<br>
+                        <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
                     </div>
-                    <div id="hi">
-                        <div id="likes">
-                            <button>liked</button><span>10 likes</span>
-                        </div>
-                        <div id="comments">10 comments</div>
-                    </div>
-                    <div id="comments">
-                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
-                        </div>
-                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
-                        </div>
-                        <div class="comment"><span class="comment-user">LILRBO</span>: lile bro broing hard lol brop
-                        </div>
-                    </div>
-                    <div id="post-comment">
-                        <!-- <div id="comment-input"> -->
-                        <input placeholder="Add a comment" id="add-comment">
-                        <!-- </div> -->
-                        <button id="post-button">Post</button>
-                    </div>
-                    <p>
-                    </p>
-
                 </div>
+                <div class="likes-comments-bar">
+                    <div id="likes">
+                        <button>liked</button><span class="hover-underline">10 likes</span>
+                    </div>
+                    <span class="hover-underline">10 comments</span>
+                </div>
+                <div id="comments">
+                    <div class="comment"><span class="hover-underline">LILRBO</span>: lile bro broing hard lol brop
+                    </div>
+                    <div class="comment"><span class="hover-underline">LILRBO</span>: lile bro broing hard lol brop
+                    </div>
+                    <div class="comment"><span class="hover-underline">LILRBO</span>: lile bro broing hard lol brop
+                    </div>
+                </div>
+                <div class="post-comment">
+                    <!-- <div id="comment-input"> -->
+                    <input placeholder="Add a comment" class="add-comment">
+                    <!-- </div> -->
+                    <button id="post-button">Post</button>
+                </div>
+                <p>
+                </p>
+
             </div>
-            Token = <div id="token"></div>
-            UserId = <div id="userID"></div>
-            <button id="generate-feed">Generate Feed</button>
+            <!--  -->
         </div>
+            <!-- Token = <div id="token"></div>
+            UserId = <div id="userID"></div> -->
+            <!-- <button id="generate-feed">Generate Feed</button> -->
+        <!-- </div> -->
         <div id="profile-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             <h1>Profile Page</h1>
             <button id="load-user-info">Load User Info</button>
@@ -119,8 +123,6 @@
         <p>&copy; lurkforwork.com 2022</p>
     </footer>
     <script type="module" src="src/main.js"></script>
-    <script type="module" src="src/login.js"></script>
-    <script type="module" src="src/rego.js"></script>
     <script type="module" src="src/mainPage.js"></script>
     <!-- <script type="module" src="src/x.js"></script> -->
 </body>
