@@ -2,11 +2,143 @@ import { BACKEND_PORT } from './config.js';
 // A helper you may want to use when uploading new images to the server.
 import { fileToDataUrl } from './helpers.js';
 
+// Global Variables
+var token = null;
+var authID = null;
+
+////////////////////////
+///// 2.1.1 Login //////
+////////////////////////
+
+const loginForm = document.forms.login_form;
+
+document.getElementById("login").addEventListener("click", () => {
+    var loginScreen = document.getElementById("login-screen");
+    if (loginScreen.style.display === "none") {
+        loginScreen.style.display = "block";
+    }
+    else loginScreen.style.display = "none";
+	}
+);
+
+
+document.getElementById("btn-login").addEventListener("click", (event) => {
+    const loginEmail = loginForm.login_email.value;
+    const loginPw = loginForm.login_pw.value;
+
+    event.preventDefault();
+
+    const requestBody = {
+        "email": loginEmail,
+        "password": loginPw
+    }
+
+    const init = {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+    }
+
+    fetch(`http://localhost:${BACKEND_PORT}/auth/login`, init)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                console.log('data is', data)
+                token = data.token;
+                authID = data.userId;
+				// LOAD MAIN PAGE
+            }
+        });
+});
+
+//////////////////////////////
+///// 2.1.2 Registration /////
+//////////////////////////////
+
+// Variables
+const regoForm = document.forms.rego_form;
+
+document.getElementById("register").addEventListener("click", () => {
+    var loginScreen = document.getElementById("rego-screen");
+    if (loginScreen.style.display === "none") {
+        loginScreen.style.display = "block";
+    }
+    else loginScreen.style.display = "none";
+}
+);
+
+document.getElementById("btn-register").addEventListener("click", (event) => {
+    let regoEmail = regoForm.rego_email.value;
+    let regoName = regoForm.rego_name.value;
+    let regoPw = regoForm.rego_pw.value;
+    let regoConfirmPw = regoForm.rego_confirm_pw.value;
+    console.log(regoEmail);
+
+    event.preventDefault();
+    if (regoPw !== regoConfirmPw) {
+        // alert("passwords don't match");
+		errorPopup("Passwords don't match lil bruva")
+        return;
+    }
+
+    const requestBody = {
+        "email": regoEmail,
+        "password": regoPw,
+        "name": regoName
+    }
+
+    const init = {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+    }
+
+
+    fetch(`http://localhost:${BACKEND_PORT}/auth/register`, init)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                console.log('data is', data)
+            }
+        });
+});
+
+//////////////////////////////
+///// 2.1.3 Error Popup //////
+//////////////////////////////
+
+// Get error popup elements
+function errorPopup(message) {
+	const popup = document.getElementById('popup');
+	const errorText = document.getElementById('error-text');
+	popup.style.display = 'block';
+	errorText.innerHTML = message;
+}
+
+// Add event listener to close button
+const closeError = document.querySelector('.close');
+closeError.addEventListener('click', function() {
+	// Hide the popup
+	popup.style.display = 'none';
+});
+
+//////////////////////////////
+///// 2.2.1 Basic Feed ///////
+//////////////////////////////
+
 // Function to deserialise the info of a job feed
 // var token = document.getElementById("token").innerText;
 
 document.getElementById("generate-feed").addEventListener("click", generate);
-document.getElementById("load-page").addEventListener("click", loadPage);
+// document.getElementById("load-page").addEventListener("click", loadPage);
 
 document.getElementById('load-user-info').addEventListener("click", getUserInfo);
 
@@ -89,17 +221,24 @@ function loadPage() {
 		} else {
 			console.log('data is', data);
 			for (const jobPost of data) {
+				console.log(jobPost);
 				generate(jobPost);
 			}
 		}
 	})
 }
 
+
+
 function generate(post) {
+
     // Create Container for job post
     const jobContainer = document.createElement("div");
-    jobContainer.setAttribute("class", "job-container");
-    
+    jobContainer.setAttribute("class", "job-post");
+	// User name 
+    const poster = document.createElement("span");
+	poster.setAttribute("hover-underline");
+	// const creatorName = 
     // // Dummy post
     // let post = {
     //     "id": 528491,
@@ -180,6 +319,7 @@ function generate(post) {
     // Append to main page
     document.getElementById("main-page").appendChild(jobContainer)
 }
+
 function showLikes(list) {
     const div = document.createElement("div");
     div.innerText = "Likes\n";
