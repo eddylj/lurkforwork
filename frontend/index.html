@@ -61,7 +61,7 @@
         </div>
 
         <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div class="main-page">
+        <div id="main-page">
         <!-- <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             Token = <div id="token"></div>
             UserId = <div id="userID"></div>
@@ -77,17 +77,20 @@
                     <img src="logo.png" class="job-img">
                     <!-- </div> -->
                     <div class="job-description">
-                        <h5>Lil Bro (JOB)</h5><br>
-                        Start date: 10/10/2000<br>
+                        <h5>Lil Bro (JOB)</h5>
+                        <div class="job-start-date">Start date: 10/10/2000</div><br>
                         <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
                     </div>
                 </div>
+
                 <div class="likes-comments-bar">
                     <div id="likes">
-                        <button>liked</button><span class="hover-underline">10 likes</span>
+                        <button class="like-button">liked</button>
+                        <span class="hover-underline">10 likes</span>
                     </div>
                     <span class="hover-underline">10 comments</span>
                 </div>
+
                 <div id="comments">
                     <div class="comment"><span class="hover-underline">LILRBO</span>: lile bro broing hard lol brop
                     </div>
@@ -100,7 +103,7 @@
                     <!-- <div id="comment-input"> -->
                     <input placeholder="Add a comment" class="add-comment">
                     <!-- </div> -->
-                    <button id="post-button">Post</button>
+                    <button class="post-comment-button">Post</button>
                 </div>
                 <p>
                 </p>
