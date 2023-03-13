@@ -23,10 +23,15 @@ document.getElementById("login").addEventListener("click", () => {
 
 
 document.getElementById("btn-login").addEventListener("click", (event) => {
+	event.preventDefault();
+
     const loginEmail = loginForm.login_email.value;
     const loginPw = loginForm.login_pw.value;
 
-    event.preventDefault();
+	// Check email and pw aren't empty
+	if (loginEmail === "" || loginPw === "") {
+		errorPopup("Please enter a valid email or password.")
+	}
 
     const requestBody = {
         "email": loginEmail,
@@ -51,6 +56,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
                 token = data.token;
                 authID = data.userId;
 				// LOAD MAIN PAGE
+				showFeed();
             }
         });
 });
@@ -62,6 +68,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 // Variables
 const regoForm = document.forms.rego_form;
 
+// Toggle nav bar rego screen
 document.getElementById("register").addEventListener("click", () => {
     var loginScreen = document.getElementById("rego-screen");
     if (loginScreen.style.display === "none") {
@@ -71,14 +78,42 @@ document.getElementById("register").addEventListener("click", () => {
 }
 );
 
+// Helper to check valid email and name
+function isValidEmailAndName(email, name) {
+	// Check if email is valid
+	let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(email)) {
+	  return false;
+	}
+	
+	// Check if name is valid (contains only letters and spaces)
+	let nameRegex = /^[a-zA-Z\s]+$/;
+	if (!nameRegex.test(name)) {
+	  return false;
+	}
+	
+	// If both email and name are valid, return true
+	return true;
+  }
+
+// Register account
 document.getElementById("btn-register").addEventListener("click", (event) => {
+    event.preventDefault();
+
     let regoEmail = regoForm.rego_email.value;
     let regoName = regoForm.rego_name.value;
     let regoPw = regoForm.rego_pw.value;
     let regoConfirmPw = regoForm.rego_confirm_pw.value;
-    console.log(regoEmail);
 
-    event.preventDefault();
+	if (!isValidEmailAndName(regoEmail, regoName)) {
+		errorPopup("Please enter a valid email and name. Name must contain only letters and spaces.");
+		return;
+	}
+
+	if (regoPw === "") {
+		errorPopup("Please enter a valid password.")
+	}
+
     if (regoPw !== regoConfirmPw) {
         // alert("passwords don't match");
 		errorPopup("Passwords don't match lil bruva")
@@ -106,7 +141,8 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
             if (data.error) {
                 alert(data.error);
             } else {
-                console.log('data is', data)
+                console.log('data is', data);
+				// BRING TO LOGIN PAGE
             }
         });
 });
@@ -132,15 +168,253 @@ closeError.addEventListener('click', function() {
 
 //////////////////////////////
 ///// 2.2.1 Basic Feed ///////
-//////////////////////////////
+////////////////////////////// MAKE SURE TO SHOW IN REVERSE CHRONOLOGICAL
 
-// Function to deserialise the info of a job feed
-// var token = document.getElementById("token").innerText;
+// Main function to show feed.
+function showFeed() {
+	console.log(token);
+	// Get the job feed
+	let init = {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		}
+	}
+	// DEFAULT SET START INDEX TO 0
+	const start_index = 0;
 
-document.getElementById("generate-feed").addEventListener("click", generate);
-// document.getElementById("load-page").addEventListener("click", loadPage);
+	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=${start_index}`, init)
+	.then(response => response.json())
+	.then(data => {
+		if(data.error) {
+			alert(data.error);
+		} else {
+			console.log('data is', data);
+			for (const jobPost of data) {
+				console.log(jobPost);
+				generatePost(jobPost);
+			}
 
-document.getElementById('load-user-info').addEventListener("click", getUserInfo);
+			// Dummy datta
+			let post = {
+				"id": 220770,
+				"creatorId": 19100,
+				"title": "COO for cupcake factory",
+				"image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
+				"start": "2011-10-05T14:48:00.000Z",
+				"description": "Dedicated technical wizard with a passion and interest in human relationships",
+				"createdAt": "2011-10-05T14:48:00.000Z",
+				"likes": [
+				{
+					"userId": 61021,
+					"userEmail": "betty@email.com",
+					"userName": "Betty"
+				}, 
+				{
+					"userId": 61775,
+					"userEmail": "zhizhizhiz@gmail.com",
+					"userName": "mechy5"
+				}
+				],
+				"comments": [
+				{
+					"userId": 61021,
+					"userEmail": "betty@email.com",
+					"userName": "Betty",
+					"comment": "This is a great opportunity, my email is hello@unsw.edu.au"
+				}, {
+					"userId": 61775,
+					"userEmail": "zhizhizhiz@gmail.com",
+					"userName": "mecy",
+					"comment": "IS AZ THE GOAT OF TFT??"
+				}
+				]
+			}
+			generatePost(post);
+		}
+	})
+}
+
+function generatePost(jobPost) {
+	// Create Container for job post
+	const jobContainer = document.createElement("div");
+	jobContainer.setAttribute("class", "job-post");
+	// User name 
+	const creatorSpan = document.createElement("span");
+	creatorSpan.setAttribute("class", "hover-underline");
+	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${jobPost.creatorId}`, {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			creatorSpan.innerText = data.name;
+		}
+	})
+	
+	// Job Post Date
+	const jobDate = document.createElement("div");
+	jobDate.setAttribute("class", "job-post-date");
+	jobDate.innerHTML = `Posted: ${jobPost.createdAt}`;
+	jobContainer.appendChild(creatorSpan);
+	jobContainer.appendChild(jobDate);
+
+	// Job content
+	const jobContent = document.createElement("div");
+	jobContent.setAttribute("class", "job-content");
+	// Add Image
+	const jobImg = document.createElement("img");
+	jobImg.setAttribute("class", "job-img");
+	jobImg.src = jobPost.image;
+	jobContent.appendChild(jobImg);
+
+	// Job description
+	const jobDescription = document.createElement("div");
+	jobDescription.setAttribute("class", "job-description");
+	const descriptionTitle = document.createElement("h5");
+	descriptionTitle.innerText = jobPost.title;
+	jobDescription.appendChild(descriptionTitle);
+	const brNode = document.createElement("br");
+	jobDescription.appendChild(brNode);
+	const jobStartDate = document.createElement("div");
+	jobStartDate.innerText = jobPost.start; // WIll need to change this for date function
+	jobDescription.appendChild(jobStartDate);
+	const brNode2 = document.createElement("br");
+	jobDescription.appendChild(brNode2);
+	const jobInfo = document.createElement("p");
+	jobInfo.innerText = jobPost.description;
+	jobDescription.appendChild(jobInfo);
+	jobContent.appendChild(jobDescription);
+
+	jobContainer.appendChild(jobContent);
+
+	// Likes and comments bar
+	const likeCommentBar = document.createElement("div");
+	likeCommentBar.setAttribute("class", "likes-comments-bar");
+	const likes = document.createElement("div");
+	likes.setAttribute("class", "likes");
+	const likeBtn = document.createElement("button");
+	likeBtn.setAttribute("class", "like-button");
+	// Check if post has been liked
+	const isLiked = jobPost.likes.some((user) => user.userId === authID);
+	if (isLiked) {
+		likeBtn.innerText = "LIKED";
+	} else {
+		likeBtn.innerText = "NOT LIKED";
+	}
+	likeBtn.setAttribute("id", `${authID}${jobPost.id}`)
+	// likeBtn.setAttribute("onclick", likePost(jobPost.id, `${authID}${jobPost.id}`));
+	const numLikes = document.createElement("span");
+	numLikes.innerText = `${jobPost.likes.length} likes`
+	numLikes.setAttribute("class", "hover-underline");
+	const numComments = document.createElement("span");
+	numComments.setAttribute("class", "hover-underline");
+	numComments.innerText = `${jobPost.comments.length} comments`;
+
+	likes.appendChild(likeBtn);
+	likes.appendChild(numLikes);
+	likeCommentBar.appendChild(likes);
+	likeCommentBar.appendChild(numComments);
+	jobContainer.appendChild(likeCommentBar);
+
+	// Comments section
+	const commentSection = document.createElement("div");
+	commentSection.setAttribute("class", "comments");
+	for (const commentInfo of jobPost.comments) {
+		const comment = document.createElement("div");
+		comment.setAttribute("class", "comment");
+		const commentUser = document.createElement("span");
+		// SET PROFILE LINK HERE
+		commentUser.innerText = commentInfo.userName;
+		commentUser.setAttribute("class", "hover-underline");
+		comment.appendChild(commentUser);
+		comment.innerHTML += `: ${commentInfo.comment}\n`;
+		commentSection.appendChild(comment);
+	}
+	jobContainer.appendChild(commentSection);
+
+	// Post comment
+	const postComment = document.createElement("div");
+	postComment.setAttribute("class", "post-comment");
+
+	const addComment = document.createElement("input");
+	addComment.setAttribute("placeholder", "Add a comment");
+	addComment.setAttribute("class", "add-comment");
+
+	const postCommentBtn = document.createElement("button");
+	postCommentBtn.setAttribute("class", "post-comment-button");
+	postCommentBtn.innerText = "Post";
+	postCommentBtn.addEventListener("click", () => {
+		const requestBody = {
+			"id": jobPost.id,
+			"comment": addComment.value
+		}
+		fetch(`http://localhost:${BACKEND_PORT}/job/comment`, {
+			method: "POST",
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': token,
+			},
+			body: JSON.stringify(requestBody)
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				addComment.innerText = "";
+				console.log("comment posted successfully");
+			}
+		});
+	});
+
+	postComment.appendChild(addComment);
+	postComment.appendChild(postCommentBtn);
+	jobContainer.appendChild(postComment);
+
+	// Append to main page
+    document.getElementById("main-page").appendChild(jobContainer);
+}
+
+// Function to like post
+function likePost(postID, btnId) {
+	// if (self.innerText === "notLiked") {}
+	const btn = document.getElementById(btnId);
+	const requestBody = {
+		"id": postID,
+		"turnon": btnId.innerText !== "LIKED",
+	}
+
+	fetch(`http://localhost:${BACKEND_PORT}/job/like`, {
+		method: "PUT",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		},
+		body: JSON.stringify(requestBody),
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			if (btn.innerText === "LIKED") {
+				btn.innerText = "NOT LIKED";
+			} else {
+				btn.innerText = "LIKED";
+			}
+		}
+	})
+}
+
+
 
 function loadUserInfo(data) {
 	// Will probably need to clear profile page first
@@ -199,150 +473,9 @@ function getUserInfo() {
 	})
 }
 
-function loadPage() {
-	let token = document.getElementById('token').innerText;
-	console.log(token);
-	// Get the job feed
-	let init = {
-		method: "GET",
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': token,
-		}
-	}
-	// DEFAULT SET START INDEX TO 0
-	const start_index = 0;
-
-	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=${start_index}`, init)
-	.then(response => response.json())
-	.then(data => {
-		if(data.error) {
-			alert(data.error);
-		} else {
-			console.log('data is', data);
-			for (const jobPost of data) {
-				console.log(jobPost);
-				generate(jobPost);
-			}
-		}
-	})
-}
 
 
 
-function generate(post) {
-
-    // Create Container for job post
-    const jobContainer = document.createElement("div");
-    jobContainer.setAttribute("class", "job-post");
-	// User name 
-    const poster = document.createElement("span");
-	poster.setAttribute("hover-underline");
-	// const creatorName = 
-    // // Dummy post
-    // let post = {
-    //     "id": 528491,
-    //     "creatorId": 61175,
-    //     "title": "COO for cupcake factory",
-    //     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
-    //     "start": "2011-10-05T14:48:00.000Z",
-    //     "description": "Dedicated technical wizard with a passion and interest in human relationships",
-    //     "createdAt": "2011-10-05T14:48:00.000Z",
-    //     "likes": [
-    //       {
-    //         "userId": 61021,
-    //         "userEmail": "betty@email.com",
-    //         "userName": "Betty"
-    //       }, 
-    //       {
-    //         "userId": 696969,
-    //         "userEmail": "zhizhizhiz@gmail.com",
-    //         "userName": "mechy5"
-    //       }
-    //     ],
-    //     "comments": [
-    //       {
-    //         "userId": 61021,
-    //         "userEmail": "betty@email.com",
-    //         "userName": "Betty",
-    //         "comment": "This is a great opportunity, my email is hello@unsw.edu.au"
-    //       }, {
-    //         "userId": 696969,
-    //         "userEmail": "zhizhizhiz@gmail.com",
-    //         "userName": "mecy",
-    //         "comment": "IS AZ THE GOAT OF TFT??"
-    //       }
-    //     ]
-    //   }
-
-    let id = post.id;
-    let creatorId = post.creatorId;
-    let title = post.title;
-    let image = post.image;
-    let start = post.start;
-    let description = post.description;
-    let createdAt = post.createdAt;
-    let numLikes = post.likes.length;
-    let numComments = post.comments.length;
-
-    // jobContainer.appendChild(makeDiv("Post ID", id));
-    jobContainer.appendChild(makeDiv("Creator", creatorId));
-    jobContainer.appendChild(makeDiv("Created At", createdAt));
-    // Image
-    const img = document.createElement("img");
-    img.src = image;
-    img.style = "width: 30px";
-    jobContainer.appendChild(img);
-    jobContainer.appendChild(makeDiv("Title", title));
-    jobContainer.appendChild(makeDiv("Job Description", description));
-    jobContainer.appendChild(makeDiv("Start Date", start));
-    jobContainer.appendChild(makeDiv("Number of Likes", numLikes));
-    jobContainer.appendChild(makeDiv("Number of Comments", numComments));
-
-    // button to like/unlike (currently only likes)
-	const likeButton = makeButton("👍 Like");
-	likeButton.addEventListener("click", () => {
-		likeJob(post.id, true);
-	})
-    jobContainer.appendChild(likeButton);
-
-    jobContainer.appendChild(makeButton("💬 Comment"));
-    
-    // Div with all the likes
-    let likesList = showLikes(post.likes);
-    jobContainer.appendChild(likesList);
-
-    // Div with all the comments
-    let commentsList = showComments(post.comments);
-    jobContainer.appendChild(commentsList);
-
-    // Append to main page
-    document.getElementById("main-page").appendChild(jobContainer)
-}
-
-function showLikes(list) {
-    const div = document.createElement("div");
-    div.innerText = "Likes\n";
-    for (const person of  list) {
-        const span = document.createElement("a");
-        span.innerText = person.userName + '\n';
-        span.setAttribute("href", "https://www.frankerfacez.com/emoticon/518858-KEWK");
-        div.appendChild(span);
-    }
-    return div;
-}
-
-function showComments(comments) {
-    const div = document.createElement("div");
-    div.innerText = "Comments\n";
-    for (const comment of comments) {
-        const commentDiv = document.createElement("div");
-        // ADD LINK
-        commentDiv.innerText = comment.userName + ": " + comment.comment;
-        div.appendChild(commentDiv);
-    }
-    return div;
-}
 
 function showWatchees(watchees) {
     const div = document.createElement("div");
