@@ -26,7 +26,7 @@
     <main role="main">
         <!-- app goes here -->
         <!-- Login Page -->
-        <div id="login-screen" class="intro-screen">
+        <div id="login-screen" class="intro-screen page" >
             <h1>Login</h1>
             <form name="login_form">
                 <input name="login_email" type="text" placeholder="Email address"><br>
@@ -38,7 +38,7 @@
         </div>
 
         <!-- Registration Page -->
-        <div id="rego-screen" class="intro-screen">
+        <div id="rego-screen" class="intro-screen page">
             <h1>Register</h1>
             <form name="rego_form">
                 <input name="rego_email" type="text" placeholder="Email address"><br>
@@ -61,7 +61,7 @@
         </div>
 
         <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div id="main-page">
+        <div id="main-page" class="page">
         <!-- <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
             Token = <div id="token"></div>
             UserId = <div id="userID"></div>
@@ -74,7 +74,7 @@
 
                 <div class="job-content">
                     <!-- <div id="img"> -->
-                    <img src="logo.png" class="job-img">
+                    <img src="images/logo.png" class="job-img">
                     <!-- </div> -->
                     <div class="job-description">
                         <h5>Lil Bro (JOB)</h5>
@@ -115,10 +115,93 @@
             UserId = <div id="userID"></div> -->
             <!-- <button id="generate-feed">Generate Feed</button> -->
         <!-- </div> -->
-        <div id="profile-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
-            <h1>Profile Page</h1>
-            <button id="load-user-info">Load User Info</button>
-            <input type="text" id="user-id" value="61775">
+        <div class="other-profile-page page">
+            <div class="profile-info">
+                <img src="images/logo.png" alt="Avatar" class="profile-img" >
+                <h3 class="profile-name">Handy Wang (Other profile)</h3> 
+                <p>handywang@gmail.com</p>
+                <span class="watchers hover-underline">2 watchers</span>
+                <button class="watch-button">Watch</button>
+            </div>
+            <div class="job-content">
+                <!-- <div id="img"> -->
+                <img src="images/logo.png" class="job-img">
+                <!-- </div> -->
+                <div class="job-description">
+                    <h5>Lil Bro (JOB)</h5>
+                    <div class="job-start-date">Start date: 10/10/2000</div><br>
+                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                </div>
+            </div>
+            <div class="job-content">
+                <!-- <div id="img"> -->
+                <img src="images/logo.png" class="job-img">
+                <!-- </div> -->
+                <div class="job-description">
+                    <h5>Lil Bro (JOB)</h5>
+                    <div class="job-start-date">Start date: 10/10/2000</div><br>
+                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                </div>
+            </div>
+
+            <!-- <button id="load-user-info">Load User Info</button> -->
+
+            <!-- <input type="text" id="user-id" value="61775"> -->
+        </div>
+        <div id="own-profile-page">
+            <div class="profile-info">
+                <div id="update-profile">
+                    <button>Update</button>
+                </div>
+                <img src="images/logo.png" alt="Avatar" class="profile-img" >
+                <h3 class="profile-name">Handy Wang (My profile)</h3> 
+                <p>handywang@gmail.com</p>
+                <span class="watchers hover-underline">2 watchers</span>
+                <button class="watch-button">Watch</button>
+            </div>
+            <div id="">
+                <input class="create-job" placeholder="Create Job">
+            </div>
+            <div class="job-content">
+                <!-- <div id="img"> -->
+                <img src="images/logo.png" class="job-img">
+                <!-- </div> -->
+                <div class="job-description">
+                    <h5>Lil Bro (JOB)</h5>
+                    <div class="job-start-date">Start date: 10/10/2000</div><br>
+                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                </div>
+                <div class="edit-job-buttons">
+                    <button class="job-update">Update</button>
+                    <button class="job-delete">Delete</button>
+                </div>
+            </div>
+            <div class="job-content">
+                <!-- <div id="img"> -->
+                <img src="images/logo.png" class="job-img">
+                <!-- </div> -->
+                <div class="job-description">
+                    <h5>Lil Bro (JOB)</h5>
+                    <div class="job-start-date">Start date: 10/10/2000</div><br>
+                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                </div>
+                <div class="edit-job-buttons">
+                    <button>Update</button>
+                    <button>Delete</button>
+                </div>
+            </div>
+        </div>
+        <div class="change-job">
+            <input class="job-name-input" placeholder="Job Name">
+            <input class="job-img-input" type="file" accept="image/*">
+            <input class="start-date-input" placeholder="Start Date">
+            <input class="job-description-input" placeholder="Description">
+        </div>
+        <div class="update-profile">
+            <input class="profile-name-update" placeholder="Name">
+            <input class="profile-picture-update" type="file" accept="image/*">
+            <input class="email-update" placeholder="Email Address">
+            <input class="password-update" placeholder="Password">
         </div>
 
     </main>

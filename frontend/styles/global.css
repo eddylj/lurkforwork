@@ -137,7 +137,8 @@ input {
     display: flex;
     flex-direction: row;
     justify-content: center;
-
+    margin: 20px 0;
+    border: 1px solid green;
 }
 
 .job-img {
@@ -177,4 +178,66 @@ h5 {
 
 .hover-underline:hover {
     text-decoration: underline;
+}
+
+.profile-info {
+    display: flex;
+    /* justify-content: center; */
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid red;
+    margin: 30px 0;
+}
+
+.other-profile-page {
+    border: 1px solid violet;
+}
+
+.profile-img {
+    width: 90px;
+    border-radius: 50%;
+}
+
+.profile-name {
+    display: inline;
+    margin: 10px 0 0 0;
+}
+
+.watchers {
+    display: inline;
+    font-size: 10px;
+}
+
+#own-profile-page {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.edit-job-buttons {
+    position: relative;
+    right: 50px;
+    width: 0;
+    height: 0;
+}
+
+#update-profile {
+    position: relative;
+    width: 0;
+    height: 0;
+    right: -80px;
+}
+
+.change-job {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid aqua;
+}
+
+.update-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
