@@ -6,6 +6,20 @@ import { fileToDataUrl } from './helpers.js';
 var token = null;
 var authID = null;
 
+// Function to load pages - by hiding
+// Input the page id from html and it hides all other pages
+function loadPage(pageId) {
+	Array.from(document.getElementsByClassName("page")).forEach(page => {
+		page.style.display = "none";
+	});
+	document.getElementById(pageId).style.display = "block";
+}
+
+document.getElementById("nav-main-feed").addEventListener("click", () => {
+	showFeed();
+});
+
+
 ////////////////////////
 ///// 2.1.1 Login //////
 ////////////////////////
@@ -13,14 +27,13 @@ var authID = null;
 const loginForm = document.forms.login_form;
 
 document.getElementById("login").addEventListener("click", () => {
-    var loginScreen = document.getElementById("login-screen");
-    if (loginScreen.style.display === "none") {
-        loginScreen.style.display = "block";
-    }
-    else loginScreen.style.display = "none";
-	}
-);
+    loadPage("login-screen");
+});
 
+document.getElementById("btn-join").addEventListener("click", (e) => {
+	e.preventDefault();
+	loadPage("rego-screen");
+})
 
 document.getElementById("btn-login").addEventListener("click", (event) => {
 	event.preventDefault();
@@ -70,13 +83,14 @@ const regoForm = document.forms.rego_form;
 
 // Toggle nav bar rego screen
 document.getElementById("register").addEventListener("click", () => {
-    var loginScreen = document.getElementById("rego-screen");
-    if (loginScreen.style.display === "none") {
-        loginScreen.style.display = "block";
-    }
-    else loginScreen.style.display = "none";
-}
-);
+    loadPage("rego-screen");
+});
+
+// Back to sign in
+document.getElementById("btn-signin").addEventListener("click", (e) => {
+	e.preventDefault();
+    loadPage("login-screen");
+});
 
 // Helper to check valid email and name
 function isValidEmailAndName(email, name) {
@@ -142,7 +156,8 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
                 alert(data.error);
             } else {
                 console.log('data is', data);
-				// BRING TO LOGIN PAGE
+				errorPopup('Not an error - registration successful');
+				loadPage("login-screen");
             }
         });
 });
@@ -172,7 +187,7 @@ closeError.addEventListener('click', function() {
 
 // Main function to show feed.
 function showFeed() {
-	console.log(token);
+	loadPage("main-page");
 	// Get the job feed
 	let init = {
 		method: "GET",
@@ -191,47 +206,16 @@ function showFeed() {
 			alert(data.error);
 		} else {
 			console.log('data is', data);
+
+			Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
+				jobPost.remove();
+			});
+
 			for (const jobPost of data) {
 				console.log(jobPost);
 				generatePost(jobPost);
 			}
 
-			// Dummy datta
-			let post = {
-				"id": 220770,
-				"creatorId": 19100,
-				"title": "COO for cupcake factory",
-				"image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",
-				"start": "2011-10-05T14:48:00.000Z",
-				"description": "Dedicated technical wizard with a passion and interest in human relationships",
-				"createdAt": "2011-10-05T14:48:00.000Z",
-				"likes": [
-				{
-					"userId": 61021,
-					"userEmail": "betty@email.com",
-					"userName": "Betty"
-				}, 
-				{
-					"userId": 61775,
-					"userEmail": "zhizhizhiz@gmail.com",
-					"userName": "mechy5"
-				}
-				],
-				"comments": [
-				{
-					"userId": 61021,
-					"userEmail": "betty@email.com",
-					"userName": "Betty",
-					"comment": "This is a great opportunity, my email is hello@unsw.edu.au"
-				}, {
-					"userId": 61775,
-					"userEmail": "zhizhizhiz@gmail.com",
-					"userName": "mecy",
-					"comment": "IS AZ THE GOAT OF TFT??"
-				}
-				]
-			}
-			generatePost(post);
 		}
 	})
 }
@@ -243,6 +227,7 @@ function generatePost(jobPost) {
 	// User name 
 	const creatorSpan = document.createElement("span");
 	creatorSpan.setAttribute("class", "hover-underline");
+	creatorSpan.addEventListener("click", () => loadProfileScreen(jobPost.creatorId));
 	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${jobPost.creatorId}`, {
 		method: "GET",
 		headers: {
@@ -266,32 +251,7 @@ function generatePost(jobPost) {
 	jobContainer.appendChild(creatorSpan);
 	jobContainer.appendChild(jobDate);
 
-	// Job content
-	const jobContent = document.createElement("div");
-	jobContent.setAttribute("class", "job-content");
-	// Add Image
-	const jobImg = document.createElement("img");
-	jobImg.setAttribute("class", "job-img");
-	jobImg.src = jobPost.image;
-	jobContent.appendChild(jobImg);
-
-	// Job description
-	const jobDescription = document.createElement("div");
-	jobDescription.setAttribute("class", "job-description");
-	const descriptionTitle = document.createElement("h5");
-	descriptionTitle.innerText = jobPost.title;
-	jobDescription.appendChild(descriptionTitle);
-	const brNode = document.createElement("br");
-	jobDescription.appendChild(brNode);
-	const jobStartDate = document.createElement("div");
-	jobStartDate.innerText = jobPost.start; // WIll need to change this for date function
-	jobDescription.appendChild(jobStartDate);
-	const brNode2 = document.createElement("br");
-	jobDescription.appendChild(brNode2);
-	const jobInfo = document.createElement("p");
-	jobInfo.innerText = jobPost.description;
-	jobDescription.appendChild(jobInfo);
-	jobContent.appendChild(jobDescription);
+	const jobContent = createJobContent(jobPost, false);
 
 	jobContainer.appendChild(jobContent);
 
@@ -306,17 +266,23 @@ function generatePost(jobPost) {
 	const isLiked = jobPost.likes.some((user) => user.userId === authID);
 	if (isLiked) {
 		likeBtn.innerText = "LIKED";
+		likeBtn.setAttribute("liked", "");
 	} else {
 		likeBtn.innerText = "NOT LIKED";
+		likeBtn.removeAttribute("liked");
 	}
 	likeBtn.setAttribute("id", `${authID}${jobPost.id}`)
-	// likeBtn.setAttribute("onclick", likePost(jobPost.id, `${authID}${jobPost.id}`));
+	likeBtn.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`));
+	// Num Likes
 	const numLikes = document.createElement("span");
 	numLikes.innerText = `${jobPost.likes.length} likes`
 	numLikes.setAttribute("class", "hover-underline");
+	numLikes.addEventListener("click", () => displayLikes(jobPost.likes));
+	// Num of Comments
 	const numComments = document.createElement("span");
 	numComments.setAttribute("class", "hover-underline");
 	numComments.innerText = `${jobPost.comments.length} comments`;
+	// numComments.addEventListener("click", () => showComments())
 
 	likes.appendChild(likeBtn);
 	likes.appendChild(numLikes);
@@ -324,18 +290,21 @@ function generatePost(jobPost) {
 	likeCommentBar.appendChild(numComments);
 	jobContainer.appendChild(likeCommentBar);
 
-	// Comments section
+	// Comments section (hide and unhide this in another function to show/unshow)
 	const commentSection = document.createElement("div");
 	commentSection.setAttribute("class", "comments");
 	for (const commentInfo of jobPost.comments) {
 		const comment = document.createElement("div");
 		comment.setAttribute("class", "comment");
 		const commentUser = document.createElement("span");
-		// SET PROFILE LINK HERE
 		commentUser.innerText = commentInfo.userName;
 		commentUser.setAttribute("class", "hover-underline");
+		commentUser.addEventListener("click", () => loadProfileScreen(commentInfo.userId));
 		comment.appendChild(commentUser);
-		comment.innerHTML += `: ${commentInfo.comment}\n`;
+		const commentContent = document.createElement("span");
+		commentContent.setAttribute("class", "comment-content");
+		commentContent.innerText = `: ${commentInfo.comment}`
+		comment.appendChild(commentContent);
 		commentSection.appendChild(comment);
 	}
 	jobContainer.appendChild(commentSection);
@@ -369,7 +338,7 @@ function generatePost(jobPost) {
 			if (data.error) {
 				alert(data.error);
 			} else {
-				addComment.innerText = "";
+				addComment.value = "";
 				console.log("comment posted successfully");
 			}
 		});
@@ -383,13 +352,106 @@ function generatePost(jobPost) {
     document.getElementById("main-page").appendChild(jobContainer);
 }
 
+// Function to generate job content
+function createJobContent(jobPost, includeUpdateDelete) {
+	// Job content
+	const jobContent = document.createElement("div");
+	jobContent.setAttribute("class", "job-content");
+	// Add Image
+	const jobImg = document.createElement("img");
+	jobImg.setAttribute("class", "job-img");
+	jobImg.src = jobPost.image;
+	jobContent.appendChild(jobImg);
+
+	// Job description
+	const jobDescription = document.createElement("div");
+	jobDescription.setAttribute("class", "job-description");
+	const descriptionTitle = document.createElement("h5");
+	descriptionTitle.innerText = jobPost.title;
+	jobDescription.appendChild(descriptionTitle);
+	const brNode = document.createElement("br");
+	jobDescription.appendChild(brNode);
+	const jobStartDate = document.createElement("div");
+	jobStartDate.innerText = jobPost.start; // WIll need to change this for date function
+	jobDescription.appendChild(jobStartDate);
+	const brNode2 = document.createElement("br");
+	jobDescription.appendChild(brNode2);
+	const jobInfo = document.createElement("p");
+	jobInfo.innerText = jobPost.description;
+	jobDescription.appendChild(jobInfo);
+	jobContent.appendChild(jobDescription);
+
+	if (includeUpdateDelete) {
+		const editJobButtons = document.createElement("div");
+		editJobButtons.setAttribute("class", "edit-job-buttons");
+		const jobUpdateBtn = document.createElement("button");
+		jobUpdateBtn.setAttribute("class", `job-update`);
+		jobUpdateBtn.innerText = "Update";
+		// Add Event listener to update
+		jobUpdateBtn.addEventListener("click", () => updateJob(jobPost));
+
+		const jobDeleteBtn = document.createElement("button");
+		jobDeleteBtn.setAttribute("class", `job-delete`);
+
+		jobDeleteBtn.innerText = "Delete";
+		// Add Event listener to delete job
+		jobDeleteBtn.addEventListener("click", () => deleteJob(jobPost.id));
+		
+		editJobButtons.appendChild(jobUpdateBtn);
+		editJobButtons.appendChild(jobDeleteBtn);
+		jobContent.appendChild(editJobButtons);
+	}
+
+	return jobContent;
+}
+
+////////////////////////////////////////
+///// 2.3.1 Show Likes on a job ////////
+////////////////////////////////////////
+
+const displayLikesClose = document.getElementById('display-likes-close');
+displayLikesClose.addEventListener('click', () => {
+	document.getElementById("display-likes-popup").style.display = "None";
+});
+
+function displayLikes(likeData) {
+	// Popup likes
+	document.getElementById("display-likes-popup").style.display = "block";
+	// Clear current likes
+	Array.from(document.getElementsByClassName("liked-user")).forEach((user) => {
+		user.remove();
+	});
+	// Add likes
+	for (const userInfo of likeData) {
+		const user = document.createElement("span");
+		user.setAttribute("class", "liked-user hover-underline");
+		user.addEventListener("click", () => {
+			loadProfileScreen(userInfo.userId);
+			document.getElementById("display-likes-popup").style.display = "None";
+		});
+		user.innerText = `${userInfo.userName} (${userInfo.userEmail})`
+		document.getElementById("display-likes-content").appendChild(user);
+	}
+}
+
+////////////////////////////////////////
+///// 2.3.2 Show comments on a job /////
+////////////////////////////////////////
+
+// in the above function - generatePost
+
+////////////////////////////////////////
+///// 2.3.3 Liking a job ///////////////
+////////////////////////////////////////
+
 // Function to like post
 function likePost(postID, btnId) {
 	// if (self.innerText === "notLiked") {}
 	const btn = document.getElementById(btnId);
+	const isLiked = btn.hasAttribute("liked");
 	const requestBody = {
 		"id": postID,
-		"turnon": btnId.innerText !== "LIKED",
+		"turnon": !isLiked,
 	}
 
 	fetch(`http://localhost:${BACKEND_PORT}/job/like`, {
@@ -407,153 +469,407 @@ function likePost(postID, btnId) {
 		} else {
 			if (btn.innerText === "LIKED") {
 				btn.innerText = "NOT LIKED";
+				btn.removeAttribute("liked");
+				errorPopup("successfully unliked");
 			} else {
 				btn.innerText = "LIKED";
+				errorPopup("successfully liked");
+				btn.setAttribute("liked", "");
 			}
 		}
 	})
 }
 
 
+////////////////////////////////////////
+///// 2.4.1 Viewing Other Profiles /////
+////////////////////////////////////////
 
-function loadUserInfo(data) {
-	// Will probably need to clear profile page first
+function loadProfileScreen(userId) {
+	// Make a get request to get user info
 
-	let id = data.id;
-    let email = data.email;
-    let name = data.name;
-    // let image = data.image;
-    let watchees = data.watcheeUserIds;
-	let numWatchees = data.watcheeUserIds.length;
-    let jobs = data.jobs;
-
-	const profileDiv = document.createElement("div");
-	profileDiv.setAttribute("class", "job-container");
-
-	// Image
-    profileDiv.appendChild(makeDiv("User ID (exclude)", id));
-	// const img = document.createElement("img");
-    // img.src = image;
-    // img.style = "width: 30px";
-	// profileDiv.appendChild(img);
-    profileDiv.appendChild(makeDiv("Email", email));
-    profileDiv.appendChild(makeDiv("Name", name));  
-	// Show watchees
-	profileDiv.appendChild(makeDiv("num watchees", numWatchees));
-	profileDiv.appendChild(showWatchees(watchees));
-	// Show Jobs
-	profileDiv.appendChild(showJobs(jobs));
-
-    document.getElementById("profile-page").appendChild(profileDiv)
-}
-
-function getUserInfo() {
-	let token = document.getElementById('token').innerText;
-	let userID = document.getElementById('user-id').value;
-
-	// Get the job feed
-	let init = {
+	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${userId}`, {
 		method: "GET",
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': token,
 		}
-	}
-
-	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${userID}`, init)
+	})
 	.then(response => response.json())
 	.then(data => {
-		if(data.error) {
+		if (data.error) {
 			alert(data.error);
 		} else {
-			console.log('data is', data);
-			loadUserInfo(data);
-			// return data;
+			console.log(data);
+			console.log(userId);
+			console.log(authID);
+			if (parseInt(userId) === authID) {
+				console.log("own");
+				generateProfile(data, true);
+			} else {
+				console.log("not own");
+				generateProfile(data, false);
+			}
 		}
 	})
 }
 
+function generateProfile(userData, isOwnProfile) {
+	// Function to show page
+	// fdsjk dsajkds fkj hdsakf
+	loadPage("profile-page");
 
-
-
-
-function showWatchees(watchees) {
-    const div = document.createElement("div");
-    div.innerText = "Watchees\n";
-    for (const watchee of watchees) {
-        // Make them a link
-		div.innerHTML += watchh + " ";
+	if (isOwnProfile) {
+		document.getElementById("update-profile").style.display = "";
+	} else {
+		document.getElementById("update-profile").style.display = "none";
 	}
-    return div;
-}
 
-function showJobs(jobs) {
-	const div = document.createElement("div");
-	div.innerText = "Jobs\n";
-	for (const job of jobs) {
-		div.innerText += `Job Title: ${job.title}\n Start: ${job.start}\n Description: ${job.descriptoin}\n Created At: ${job.createdAt}\n`
-		const img = document.createElement("img");
-		img.src = job.image;
-		img.style = "width: 30px";
-		div.appendChild(img);
+	document.getElementById("profile-name").innerText = userData.name;
+	document.getElementById("profile-email").innerText = userData.email;
+	let profileImg = document.getElementById("profile-img");
+	if (userData.image === undefined) {
+		profileImg.src = "images/defaultProfile.png";
+	} else {
+		profileImg.src =  userData.image;
 	}
-	return div;
+	
+	// Create num of watchees - do this so button doesn't stack up on multiple event listeners (remove curr first)
+	let profileInfo = document.getElementById("profile-info");
+	let numWatchers = document.getElementById("profile-num-watchers");
+	let watchButton = document.getElementById("watch-button");
+	profileInfo.removeChild(numWatchers);
+	// console.log(profileInfo.childNodes);
+	if (watchButton !== null) {
+		profileInfo.removeChild(watchButton);
+	}
+	// Num watchers
+	let newNumWatchers = document.createElement("span");
+	newNumWatchers.setAttribute("class", "watchers hover-underline");
+	newNumWatchers.setAttribute("id", "profile-num-watchers");
+	newNumWatchers.innerText = `${userData.watcheeUserIds.length} watcher(s)`;
+	newNumWatchers.addEventListener("click", () => displayWatchers(userData.watcheeUserIds));
+	profileInfo.appendChild(newNumWatchers);
+
+	// Add button to watch/unwatch
+	if (!isOwnProfile) {
+		let newWatchButton = document.createElement("watch-button");
+		newWatchButton.setAttribute("id", "watch-button");
+		newWatchButton.innerText = "watch button";
+		// Check if user is currently watching
+
+		newWatchButton.addEventListener("click", () => watchUser(userData.email, true));
+		profileInfo.appendChild(newWatchButton);
+	}
+
+	// Create job
+	if (isOwnProfile) {
+		// function to hide and unhide
+		console.log("own");
+		document.getElementById("create-job-container").style.display = "block";
+	} else {
+		console.log("not own");
+		document.getElementById("create-job-container").style.display = "None";
+	}
+
+	// Generate jobs
+	// Delete job postings first
+	Array.from(document.getElementsByClassName("job-content")).forEach((jobPost) => {
+		jobPost.remove();
+	});
+	const profilePage = document.getElementById("profile-page");
+	userData.jobs.forEach((jobPost) => {
+		const jobContent = createJobContent(jobPost, isOwnProfile);
+		profilePage.appendChild(jobContent);
+	});
 }
 
-function makeDiv(ind, val) {
-    const div = document.createElement("div");
-    div.innerText = ind + ": " +  val;
-    return div;
+// Show watchers
+
+const displayWatchersClose = document.getElementById('display-watchers-close');
+displayWatchersClose.addEventListener('click', () => {
+	document.getElementById("display-watchers-popup").style.display = "None";
+});
+
+function displayWatchers(watcheeIds) {
+	// Popup likes
+	document.getElementById("display-watchers-popup").style.display = "block";
+	// Clear current likes
+	Array.from(document.getElementsByClassName("watcher")).forEach((user) => {
+		user.remove();
+	});
+
+	// Add likes
+	for (const id of watcheeIds) {
+		const user = document.createElement("span");
+		user.setAttribute("class", "watcher hover-underline");
+		user.addEventListener("click", () => {
+			loadProfileScreen(id);
+			document.getElementById("display-watchers-popup").style.display = "None";
+		});
+		fetch(`http://localhost:${BACKEND_PORT}/user?userId=${id}`, {
+			method: "GET",
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': token,
+			}
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				user.innerText = data.name;
+			}
+		})
+		document.getElementById("display-watchers-content").appendChild(user);
+	}
 }
 
-function makeButton(name) {
-    const butt = document.createElement("button");
-    butt.innerHTML = name;
-    return butt;
-}
+////////////////////////////////////////
+///// 2.4.3 Updating your profile  /////
+////////////////////////////////////////
 
-function getNameFromUserID(userID) {
-    console.log(document.getElementById("token").innerText);
-    let x = document.getElementById("token").innerText
-    fetch(`http://localhost:${BACKEND_PORT}/user?userId=${userID}`, {
-        method: "GET",
-        header: {
-            'Content-Type': 'application/json',
-            Authorization: x,
-        },
-    })
-        .then(response => response.json())
-        .then(data => {
-            if(data.error) {
-                alert(data.error);
-            } else {
-                return data.name;
-            }
-    })
-}
+const editProfileBtn = document.getElementById("update-profile");
+editProfileBtn.addEventListener("click", () => {
+	// Popup screen here
+	document.getElementById("update-profile-popup").style.display = "block";
+	// Fill out the popup info
+	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${authID}`, {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error){
+			alert(data.error);
+		} else {
+			document.getElementById("profile-name-update").value = data.name;
+			// might need to change this
+			// document.getElementById("profile-picture-update").value = data.image;
+			document.getElementById("email-update").value = data.email;
+		}
+	})
 
-// LIKE A JOB
-function likeJob(postID, isLiked) {
+
+});
+
+// Add event listener to close button
+const profilePopupClose = document.getElementById('profile-popup-close');
+profilePopupClose.addEventListener('click', () => {
+	// Hide the popup
+	document.getElementById("update-profile-popup").style.display = "None";
+});
+
+const updateProfileBtn = document.getElementById("update-profile-btn");
+updateProfileBtn.addEventListener("click", () => {
+
+	let name = document.getElementById("profile-name-update").value;
+	let img = document.getElementById("profile-picture-update").value;
+	let email = document.getElementById("email-update").value;
+	let password = document.getElementById("password-update").value;
+	let confirmPassword = document.getElementById("confirm-password-update").value;
+
+	// Check name, email password is value
+	if (!isValidEmailAndName(email, name)) {
+		errorPopup("Please enter valid email and name");
+		return;
+	}
+	if (password === "") {
+		errorPopup("please enter valid password")
+		return;
+	}
+	if (password !== confirmPassword) {
+		errorPopup("Passwords don't match");
+		return;
+	}
+
 	const requestBody = {
-		"id": postID,
-		"turnon": isLiked,
+		"email": email,
+		"password": password,
+		"name": name,
+		"image": img,
 	}
-	let init = {
+	fetch(`http://localhost:${BACKEND_PORT}/user`, {
 		method: "PUT",
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': token,
 		},
-		body: JSON.stringify(requestBody),
-	}
-
-	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${userID}`, init)
+		body: JSON.stringify(requestBody)
+	})
 	.then(response => response.json())
 	.then(data => {
-		if(data.error) {
+		if (data.error) {
 			alert(data.error);
 		} else {
-			console.log('data is', data);
+			errorPopup("Not actually an error - Succesfully Updated Profile");
+			// Close popup
+			document.getElementById("update-profile-popup").style.display = "None";
+		}
+	})
+})
+
+
+////////////////////////////////////////
+///// 2.4.4 Watching/Unwatching  ///////
+////////////////////////////////////////
+
+// Watch Button
+function watchUser(email, setWatch) {
+	const requestBody = {
+		"email": email,
+		"turnon": setWatch
+	}
+	fetch(`http://localhost:${BACKEND_PORT}/user/watch`, {
+		method: "PUT",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		},
+		body: JSON.stringify(requestBody)
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			console.log("watched");
+		}
+	})
+}
+
+////////////////////////////////////////
+///// 2.5.1 Adding a job  //////////////
+////////////////////////////////////////
+
+const createJobBtn = document.getElementById("create-job");
+createJobBtn.addEventListener("click", () => {
+	document.getElementById("create-job-popup").style.display = "block";
+});
+
+// Add event listener to close button
+const createJobClose = document.getElementById('create-job-close');
+createJobClose.addEventListener('click', () => {
+	// Hide the popup
+	document.getElementById("create-job-popup").style.display = "None";
+});
+
+
+const submitJobBtn = document.getElementById("create-job-btn");
+submitJobBtn.addEventListener("click", () => {
+
+	let title = document.getElementById("job-name-input").value;
+	let img = document.getElementById("job-img-input").value;
+	let startDate= document.getElementById("start-date-input").value;
+	let description= document.getElementById("job-description-input").value;
+
+	// Check everything is non-empty
+	if (title === "" || description === "" || startDate === "") {
+		errorPopup("Name, image and description can't be empty");
+		return;
+	}
+
+	console.log(title, img, startDate, description);
+
+	const requestBody = {
+		"title": title,
+		"image": img,
+		"start": startDate,
+		"description": description
+	}
+
+	fetch(`http://localhost:${BACKEND_PORT}/job`, {
+		method: "POST",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		},
+		body: JSON.stringify(requestBody)
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			errorPopup("Not actually an error - Succesfully made job");
+			// Close popup
+			document.getElementById("create-job-popup").style.display = "None";
+		}
+	})
+})
+
+///////////////////////////////////////////
+///// 2.5.1 Updating and deleting a job ///
+///////////////////////////////////////////
+
+// Add event listener to close button
+const udpateJobClose = document.getElementById('update-job-close');
+udpateJobClose.addEventListener('click', () => {
+	document.getElementById("update-job-popup").style.display = "None";
+});
+
+function updateJob(jobData) {
+	document.getElementById("update-job-popup").style.display = "block";
+	
+	document.getElementById("update-job-name-input").value = jobData.title;
+	document.getElementById("update-job-img-input").value = jobData.image;
+	document.getElementById("update-start-date-input").value = jobData.start;
+	document.getElementById("update-job-description-input").value = jobData.description;
+	
+	document.getElementById("update-job-btn").addEventListener("click", () => postJobUpdate(jobData.id));
+}
+
+function postJobUpdate(jobId) {
+	const requestBody = {
+		"id": jobId,
+		"title": document.getElementById("update-job-name-input").value,
+		"image": document.getElementById("update-job-img-input").value,
+		"start": document.getElementById("update-start-date-input").value,
+		"description": document.getElementById("update-job-description-input").value
+	}
+	fetch(`http://localhost:${BACKEND_PORT}/job`, {
+		method: "PUT",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		},
+		body: JSON.stringify(requestBody)
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			errorPopup("Not actually an error - Succesfully updated job");
+			document.getElementById("update-job-popup").style.display = "None";
+		}
+	})
+}
+
+// document.getElementById("update-job-btn").addEventListener
+
+function deleteJob(jobId) {
+	const requestBody = {
+		"id": jobId
+	}
+	fetch(`http://localhost:${BACKEND_PORT}/job`, {
+		method: "DELETE",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		},
+		body: JSON.stringify(requestBody)
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			errorPopup("Not actually an error - Succesfully deleted job");
 		}
 	})
 }
