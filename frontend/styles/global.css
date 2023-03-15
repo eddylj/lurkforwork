@@ -4,11 +4,23 @@ html, body {
     padding: 0;
     height: 100%;
     font-family: Georgia;
+    background-color: #F9F6EE;
     /* margin: 0 5%px; */
 }
 
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+i {
+    font-size: 30px;
+}
+
 #nav {
-    /* background-color: rgb(55, 48, 107); */
+    background-color: rgb(102,52,127);
+    /* display: absolute; */
     overflow: hidden;
 }
 
@@ -19,8 +31,12 @@ html, body {
     font-size: 50px;
 }
 
+.nav-right {
+    float: right;
+}
+
 /* Error Popup */
-.error-popup {
+.popup {
     display: None;
     position: fixed;
     z-index: 2;
@@ -28,24 +44,31 @@ html, body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    /* overflow: auto; */
     background-color: rgba(0,0,0,0.4);
 }
-  
+
+#error-title {
+    color: rgb(155, 10, 10);
+}
+
+#success-title {
+    color: green;
+}
+
 .popup-content {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
+    border: 1px solid black;
+    width: 40%;
     text-align: center;
 }
 
 .close {
     color: #aaa;
     float: right;
-    font-size: 28px;
-    font-weight: bold;
+    font-size: 25px;
 }
 
 .close:hover,
@@ -53,6 +76,10 @@ html, body {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+.popup-text {
+    display: inline;
 }
 /* Error Pop up end */
 
@@ -65,21 +92,24 @@ button {
 
 .intro-screen {
     margin: 20px; 
-    padding: 20px; 
+    padding: 5px 70px 25px 70px; 
     border: 1px solid black;
     text-align: center;
     display: flex;
     flex-direction: column;
+    max-width: 550px;
+    background-color: white;
 }
 
 .btn-submit {
     width: 311px;
     height: 30px;
-    border: 0;
+    border: 1px;
     border-radius: 6px;
     margin: 7px;
     background-color: rgb(102,52,127);
     color: white;
+    /* box-sizing: border-box; */
 
 }
 
@@ -109,46 +139,43 @@ input {
     /* border-: 5px; */
 }
 
-.job-container {
+/* .job-container {
     border: 1px solid magenta;
     margin: 5px;
     padding: 10px;
-}
+} */
 
 #main-page {
     display: flex;
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    background-color: white;
+
 }
 
 .job-post {
-    /* padding: 0 300px; */
+    padding: 0 50px;
+    width: 400px;
     outline: 1px solid pink;
     display: flex;
     flex-direction: column;
-    /* justify-content: center; */
     align-items: start;
-    /* text-align: ce; */
-
+    word-break: break-word;
 }
 
 .job-content {
     display: flex;
+    width: 400px;
     flex-direction: row;
-    justify-content: center;
     margin: 20px 0;
     border: 1px solid green;
+    word-break: break-word;
 }
 
 .job-img {
     height: 50px;
     padding: 0 20px;
-}
-
-.job-description {
-    width: 400px;
-    word-wrap: break-word;
 }
 
 p {
@@ -213,13 +240,15 @@ h5 {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    background-color: white;
 }
 
 .edit-job-buttons {
     position: relative;
-    right: 50px;
-    width: 0;
-    height: 0;
+    right: 0px;
+    word-break: normal;
+    /* width: 0; */
+    /* height: 0; */
 }
 
 #update-profile {
@@ -307,13 +336,14 @@ h5 {
 }
 
 /* Like Button */
-.like-button {
+/* .like-button {
     background-color: pink;
 }
 
 .like-button[liked] {
     background-color: purple;
-}
+    color: blue;
+} */
 
 /* Display Likes */
 #display-likes-popup {

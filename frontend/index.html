@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- You can add your styles and scripts here -->
     <link rel="stylesheet" type="text/css" media="screen" href="styles/global.css" />
+    <script src="https://kit.fontawesome.com/222ab95cdb.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -18,8 +19,11 @@
                 <a>LurkforWork</a>
                 <a class="nav-logo"><img src="images/logo.png" style="height:30px"></a>
                 <a><button id="login" class="nav-login">Login</button></a>
-                <a> <button id="register" class="nav-register">Register</button></a>
-                <a> <button id="nav-main-feed" class="nav-main-feed">Main Feed (only click when logged in)</button></a>
+                <a><button id="register" class="nav-register">Register</button></a>
+                <a><button id="nav-main-feed-button" class="nav-main-feed"><i class="fa-solid fa-house"></i></button></a>
+                <div class="nav-right">
+                    <a><button id="nav-profile-button"><i id="test" class="fa-regular fa-user"></i></button></a>
+                </div>
             </nav>
         </div>
 
@@ -27,10 +31,10 @@
     <main role="main">
         <!-- app goes here -->
         <!-- Login Page -->
-        <div id="login-screen" class="intro-screen page" >
+        <div id="login-screen" class="intro-screen page">
             <h1>Login</h1>
             <form name="login_form">
-                <input name="login_email" type="text" placeholder="Email address"><br>
+                <input name="login_email" type="text" placeholder="Email Address"><br>
                 <input name="login_pw" type="password" placeholder="Password"><br>
                 <button id="btn-login" class="btn-submit">Login</button> <br>
                 Don't have an account?
@@ -42,7 +46,7 @@
         <div id="rego-screen" class="intro-screen page">
             <h1>Register</h1>
             <form name="rego_form">
-                <input name="rego_email" type="text" placeholder="Email address"><br>
+                <input name="rego_email" type="text" placeholder="Email Address"><br>
                 <input name="rego_name" type="text" placeholder="Name"><br>
                 <input name="rego_pw" type="password" placeholder="Password"><br>
                 <input name="rego_confirm_pw" type="password" placeholder="Confirm Password"><br>
@@ -53,11 +57,25 @@
         </div>
 
         <!-- Error Popup -->
-        <div id="popup" class="error-popup">
+        <div id="error-popup" class="popup">
             <div class="popup-content">
-                <h3>ERROR!!!</h3>
-                <span class="close">&times;</span>
+                <span class="close" id="error-close">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+                <h3 id="error-title">ERROR!</h3>
+                <i class="fa-solid fa-triangle-exclamation"></i>
                 <div id="error-text"></div>
+            </div>
+        </div>
+        <!-- Success Pop -->
+        <div id="success-popup" class="popup">
+            <div class="popup-content">
+                <span class="close" id="success-close">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+                <h3 id="success-title">SUCCESS!</h3>
+                <i class="fa-solid fa-check"></i>
+                <div id="success-text" class="popup-text"></div>
             </div>
         </div>
 
@@ -74,20 +92,24 @@
                     <div class="job-description">
                         <h5>Lil Bro (JOB)</h5>
                         <div class="job-start-date">Start date: 10/10/2000</div><br>
-                        <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                        <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going
+                            8th every gam lil bro out here lil broing and going 8th every gam</p>
                     </div>
                 </div>
 
                 <div class="likes-comments-bar">
                     <div id="likes">
-                        <button class="like-button">liked</button>
+                        <button class="like-button"><i id="like-icon" class="fa-regular fa-thumbs-up"></i></button>
                         <span class="hover-underline">10 likes</span>
                     </div>
                     <span class="hover-underline">10 comments</span>
                 </div>
 
                 <div id="comments">
-                    <div class="comment"><span class="hover-underline">LILRBO</span> <span class="comment-content">: lile bro broing hard lol brop</span>
+                    <div class="comment"><span
+                            class="hover-underline">LILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRB
+                            OLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBO</span>
+                        <span class="comment-content">: lile bro broing hard lol brop</span>
                     </div>
                 </div>
 
@@ -103,7 +125,7 @@
             </div>
         </div>
 
-            <!-- <button id="load-user-info">Load User Info</button> -->
+        <!-- <button id="load-user-info">Load User Info</button> -->
 
         <!-- Profile Page -->
         <div id="profile-page" class="page">
@@ -113,9 +135,9 @@
                     <button id="edit-profile">Update</button>
                 </div>
                 <img src="images/logo.png" alt="Avatar" id="profile-img">
-                <h3 id="profile-name">Handy Wang (My profile)</h3> 
+                <h3 id="profile-name">Handy Wang (My profile)</h3>
                 <p id="profile-email">handywang@gmail.com</p>
-                
+
                 <span class="watchers hover-underline" id="profile-num-watchers">2 watchers</span>
                 <button id="watch-button">Watch</button>
             </div>
@@ -132,7 +154,8 @@
                 <div class="job-description">
                     <h5>Lil Bro (JOB)</h5>
                     <div class="job-start-date">Start date: 10/10/2000</div><br>
-                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th every gam lil bro out here lil broing and going 8th every gam</p>
+                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th
+                        every gam lil bro out here lil broing and going 8th every gam</p>
                 </div>
                 <div class="edit-job-buttons">
                     <button>Update</button>
@@ -152,7 +175,7 @@
                 <span class="close" id="display-watchers-close">&times;</span>
             </div>
         </div>
-        
+
         <div id="create-job-popup">
             <div id="create-job-content">
                 <span class="close" id="create-job-close">&times;</span>

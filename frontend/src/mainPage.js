@@ -6,17 +6,24 @@ import { fileToDataUrl } from './helpers.js';
 var token = null;
 var authID = null;
 
+// Opens the page in login screen
+// loadPage("login-screen");
+
 // Function to load pages - by hiding
 // Input the page id from html and it hides all other pages
 function loadPage(pageId) {
 	Array.from(document.getElementsByClassName("page")).forEach(page => {
 		page.style.display = "none";
 	});
-	document.getElementById(pageId).style.display = "block";
+	document.getElementById(pageId).style.display = "";
 }
 
-document.getElementById("nav-main-feed").addEventListener("click", () => {
+document.getElementById("nav-main-feed-button").addEventListener("click", () => {
 	showFeed();
+});
+
+document.getElementById("nav-profile-button").addEventListener("click", () => {
+	loadProfileScreen(authID);
 });
 
 
@@ -43,7 +50,8 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 
 	// Check email and pw aren't empty
 	if (loginEmail === "" || loginPw === "") {
-		errorPopup("Please enter a valid email or password.")
+		popup("Please enter a valid email or password.", false)
+		return;
 	}
 
     const requestBody = {
@@ -63,7 +71,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                alert(data.error);
+                popup("Please enter a valid email or password.", false);
             } else {
                 console.log('data is', data)
                 token = data.token;
@@ -120,17 +128,17 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
     let regoConfirmPw = regoForm.rego_confirm_pw.value;
 
 	if (!isValidEmailAndName(regoEmail, regoName)) {
-		errorPopup("Please enter a valid email and name. Name must contain only letters and spaces.");
+		popup("Please enter a valid email and name. Name must contain only letters and spaces.", false);
 		return;
 	}
 
 	if (regoPw === "") {
-		errorPopup("Please enter a valid password.")
+		popup("Please enter a valid password.", false)
+		return;
 	}
 
     if (regoPw !== regoConfirmPw) {
-        // alert("passwords don't match");
-		errorPopup("Passwords don't match lil bruva")
+		popup("Please ensure passwords match", false)
         return;
     }
 
@@ -156,7 +164,7 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
                 alert(data.error);
             } else {
                 console.log('data is', data);
-				errorPopup('Not an error - registration successful');
+				popup('Registration successful', true);
 				loadPage("login-screen");
             }
         });
@@ -166,19 +174,37 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 ///// 2.1.3 Error Popup //////
 //////////////////////////////
 
+const errorPopup = document.getElementById('error-popup');
+const successPopup = document.getElementById('success-popup');
+
+
 // Get error popup elements
-function errorPopup(message) {
-	const popup = document.getElementById('popup');
-	const errorText = document.getElementById('error-text');
-	popup.style.display = 'block';
-	errorText.innerHTML = message;
+function popup(message, bool) {
+	var popupText;
+	var popupType;
+	if (bool) {
+		popupText = document.getElementById('success-text');
+		popupType = successPopup;
+	}
+	else {
+		popupText = document.getElementById('error-text');
+		popupType = errorPopup;
+	}
+	popupType.style.display = 'block';
+	popupText.innerHTML = message;
 }
 
 // Add event listener to close button
-const closeError = document.querySelector('.close');
+const closeError = document.getElementById('error-close');
 closeError.addEventListener('click', function() {
 	// Hide the popup
-	popup.style.display = 'none';
+	errorPopup.style.display = 'none';
+});
+
+const closeSuccess = document.getElementById('success-close');
+closeSuccess.addEventListener('click', function() {
+	// Hide the popup
+	successPopup.style.display = 'none';
 });
 
 //////////////////////////////
@@ -264,15 +290,18 @@ function generatePost(jobPost) {
 	likeBtn.setAttribute("class", "like-button");
 	// Check if post has been liked
 	const isLiked = jobPost.likes.some((user) => user.userId === authID);
+	const likeIcon = document.createElement("i");
 	if (isLiked) {
-		likeBtn.innerText = "LIKED";
+		likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
 		likeBtn.setAttribute("liked", "");
 	} else {
-		likeBtn.innerText = "NOT LIKED";
+		likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
 		likeBtn.removeAttribute("liked");
 	}
+	likeBtn.appendChild(likeIcon);
+
 	likeBtn.setAttribute("id", `${authID}${jobPost.id}`)
-	likeBtn.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`));
+	likeBtn.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
 	// Num Likes
 	const numLikes = document.createElement("span");
 	numLikes.innerText = `${jobPost.likes.length} likes`
@@ -367,8 +396,10 @@ function createJobContent(jobPost, includeUpdateDelete) {
 	const jobDescription = document.createElement("div");
 	jobDescription.setAttribute("class", "job-description");
 	const descriptionTitle = document.createElement("h5");
-	descriptionTitle.innerText = jobPost.title;
+	descriptionTitle.innerText = `${jobPost.title}${jobPost.id}`;
 	jobDescription.appendChild(descriptionTitle);
+
+
 	const brNode = document.createElement("br");
 	jobDescription.appendChild(brNode);
 	const jobStartDate = document.createElement("div");
@@ -444,8 +475,10 @@ function displayLikes(likeData) {
 ///// 2.3.3 Liking a job ///////////////
 ////////////////////////////////////////
 
+
+
 // Function to like post
-function likePost(postID, btnId) {
+function likePost(postID, btnId, likeIcon) {
 	// if (self.innerText === "notLiked") {}
 	const btn = document.getElementById(btnId);
 	const isLiked = btn.hasAttribute("liked");
@@ -467,14 +500,13 @@ function likePost(postID, btnId) {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			if (btn.innerText === "LIKED") {
-				btn.innerText = "NOT LIKED";
+			if (isLiked) {
 				btn.removeAttribute("liked");
-				errorPopup("successfully unliked");
-			} else {
-				btn.innerText = "LIKED";
-				errorPopup("successfully liked");
+				likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
+			}
+			else {
 				btn.setAttribute("liked", "");
+				likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
 			}
 		}
 	})
@@ -675,15 +707,15 @@ updateProfileBtn.addEventListener("click", () => {
 
 	// Check name, email password is value
 	if (!isValidEmailAndName(email, name)) {
-		errorPopup("Please enter valid email and name");
+		popup("Please enter valid email and name", false);
 		return;
 	}
 	if (password === "") {
-		errorPopup("please enter valid password")
+		popup("please enter valid password", false)
 		return;
 	}
 	if (password !== confirmPassword) {
-		errorPopup("Passwords don't match");
+		popup("Passwords don't match", false);
 		return;
 	}
 
@@ -706,7 +738,7 @@ updateProfileBtn.addEventListener("click", () => {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			errorPopup("Not actually an error - Succesfully Updated Profile");
+			popup("Not actually an error - Succesfully Updated Profile", true);
 			// Close popup
 			document.getElementById("update-profile-popup").style.display = "None";
 		}
@@ -769,7 +801,7 @@ submitJobBtn.addEventListener("click", () => {
 
 	// Check everything is non-empty
 	if (title === "" || description === "" || startDate === "") {
-		errorPopup("Name, image and description can't be empty");
+		popup("Name, image and description can't be empty", false);
 		return;
 	}
 
@@ -795,7 +827,7 @@ submitJobBtn.addEventListener("click", () => {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			errorPopup("Not actually an error - Succesfully made job");
+			popup("Not actually an error - Succesfully made job", true);
 			// Close popup
 			document.getElementById("create-job-popup").style.display = "None";
 		}
@@ -819,7 +851,13 @@ function updateJob(jobData) {
 	document.getElementById("update-job-img-input").value = jobData.image;
 	document.getElementById("update-start-date-input").value = jobData.start;
 	document.getElementById("update-job-description-input").value = jobData.description;
-	
+
+	document.getElementById("update-job-btn").remove();
+	const updateButton = document.createElement("button");
+	updateButton.setAttribute("id", "update-job-btn");
+	updateButton.innerText = "Update";
+	document.getElementById("update-job-content").appendChild(updateButton);
+
 	document.getElementById("update-job-btn").addEventListener("click", () => postJobUpdate(jobData.id));
 }
 
@@ -844,8 +882,9 @@ function postJobUpdate(jobId) {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			errorPopup("Not actually an error - Succesfully updated job");
+			popup("Not actually an error - Succesfully updated job", true);
 			document.getElementById("update-job-popup").style.display = "None";
+			console.log(requestBody);
 		}
 	})
 }
@@ -869,7 +908,7 @@ function deleteJob(jobId) {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			errorPopup("Not actually an error - Succesfully deleted job");
+			popup("Not actually an error - Succesfully deleted job", true);
 		}
 	})
 }
