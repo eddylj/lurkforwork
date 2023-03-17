@@ -277,7 +277,7 @@ function generatePost(jobPost) {
 	jobContainer.appendChild(creatorSpan);
 	jobContainer.appendChild(jobDate);
 
-	const jobContent = createJobContent(jobPost, false);
+	const jobContent = createJobContent(jobPost);
 
 	jobContainer.appendChild(jobContent);
 
@@ -287,7 +287,7 @@ function generatePost(jobPost) {
 	const likes = document.createElement("div");
 	likes.setAttribute("class", "likes");
 	const likeSpan = document.createElement("span");
-	// likeBtn.setAttribute("class", "like-span");
+
 	// Check if post has been liked
 	const isLiked = jobPost.likes.some((user) => user.userId === authID);
 	const likeIcon = document.createElement("i");
@@ -382,7 +382,7 @@ function generatePost(jobPost) {
 }
 
 // Function to generate job content
-function createJobContent(jobPost, includeUpdateDelete) {
+function createJobContent(jobPost) {
 	// Job content
 	const jobContent = document.createElement("div");
 	jobContent.setAttribute("class", "job-content");
@@ -411,27 +411,6 @@ function createJobContent(jobPost, includeUpdateDelete) {
 	jobInfo.innerText = jobPost.description;
 	jobDescription.appendChild(jobInfo);
 	jobContent.appendChild(jobDescription);
-
-	if (includeUpdateDelete) {
-		const editJobButtons = document.createElement("div");
-		editJobButtons.setAttribute("class", "edit-job-buttons");
-		const jobUpdateBtn = document.createElement("button");
-		jobUpdateBtn.setAttribute("class", `job-update`);
-		jobUpdateBtn.innerText = "Update";
-		// Add Event listener to update
-		jobUpdateBtn.addEventListener("click", () => updateJob(jobPost));
-
-		const jobDeleteBtn = document.createElement("button");
-		jobDeleteBtn.setAttribute("class", `job-delete`);
-
-		jobDeleteBtn.innerText = "Delete";
-		// Add Event listener to delete job
-		jobDeleteBtn.addEventListener("click", () => deleteJob(jobPost.id));
-		
-		editJobButtons.appendChild(jobUpdateBtn);
-		editJobButtons.appendChild(jobDeleteBtn);
-		jobContent.appendChild(editJobButtons);
-	}
 
 	return jobContent;
 }
@@ -569,12 +548,14 @@ function generateProfile(userData, isOwnProfile) {
 	// Create num of watchees - do this so button doesn't stack up on multiple event listeners (remove curr first)
 	let profileInfo = document.getElementById("profile-info");
 	let numWatchers = document.getElementById("profile-num-watchers");
-	let watchButton = document.getElementById("watch-button");
 	profileInfo.removeChild(numWatchers);
-	// console.log(profileInfo.childNodes);
+
+	// Removes watch button from own profile
+	let watchButton = document.getElementById("watch-button");
 	if (watchButton !== null) {
 		profileInfo.removeChild(watchButton);
 	}
+
 	// Num watchers
 	let newNumWatchers = document.createElement("span");
 	newNumWatchers.setAttribute("class", "watchers hover-underline");
@@ -584,15 +565,22 @@ function generateProfile(userData, isOwnProfile) {
 	profileInfo.appendChild(newNumWatchers);
 
 	// Add button to watch/unwatch
-	if (!isOwnProfile) {
-		let newWatchButton = document.createElement("watch-button");
-		newWatchButton.setAttribute("id", "watch-button");
-		newWatchButton.innerText = "watch button";
-		// Check if user is currently watching
-
-		newWatchButton.addEventListener("click", () => watchUser(userData.email, true));
-		profileInfo.appendChild(newWatchButton);
+	let newWatchButton = document.createElement("button");
+	newWatchButton.setAttribute("id", "watch-button");
+	// Check if user is currently watching
+	const isWatched = userData.watcheeUserIds.some((watcher) => watcher === authID);
+	if (isWatched) {
+		newWatchButton.innerText = "✔️ Watching";
+		newWatchButton.setAttribute("watching", "")
 	}
+	else {
+		newWatchButton.innerText = "➕ Watch";
+		newWatchButton.removeAttribute("watching")
+	}
+	profileInfo.appendChild(newWatchButton);
+
+	// newWatchButton.setAttribute("id", `${authID}${userData.id}`);
+	newWatchButton.addEventListener("click", () => watchUser(userData.email, "watch-button"));
 
 	// Create job
 	if (isOwnProfile) {
@@ -613,8 +601,35 @@ function generateProfile(userData, isOwnProfile) {
 	userData.jobs.forEach((jobPost) => {
 		const jobContainer = document.createElement("div");
 		jobContainer.setAttribute("class", "job-post");
-		const jobContent = createJobContent(jobPost, isOwnProfile);
+
+		// Create update and delete job buttons
+		if (isOwnProfile) {
+			const editJobButtonsFather = document.createElement("div");
+			editJobButtonsFather.setAttribute("class", "edit-job-buttons-father");
+			const editJobButtons = document.createElement("div");
+			editJobButtons.setAttribute("class", "edit-job-buttons");
+	
+			const jobUpdateBtn = document.createElement("button");
+			jobUpdateBtn.setAttribute("class", "job-update");
+			jobUpdateBtn.innerText = "Update";
+			// Add Event listener to update
+			jobUpdateBtn.addEventListener("click", () => updateJob(jobPost));
+	
+			const jobDeleteBtn = document.createElement("button");
+			jobDeleteBtn.setAttribute("class", "job-delete");
+			jobDeleteBtn.innerText = "Delete";
+			// Add Event listener to delete job
+			jobDeleteBtn.addEventListener("click", () => deleteJob(jobPost.id));
+			
+			editJobButtons.appendChild(jobUpdateBtn);
+			editJobButtons.appendChild(jobDeleteBtn);
+			editJobButtonsFather.appendChild(editJobButtons);
+			jobContainer.appendChild(editJobButtonsFather);
+		}
+		const jobContent = createJobContent(jobPost);
 		jobContainer.appendChild(jobContent);
+
+
 		profilePage.appendChild(jobContainer);
 	});
 }
@@ -754,10 +769,12 @@ updateProfileBtn.addEventListener("click", () => {
 ////////////////////////////////////////
 
 // Watch Button
-function watchUser(email, setWatch) {
+function watchUser(email, buttonId) {
+	const watchButton = document.getElementById(buttonId);
+	const isWatched = watchButton.hasAttribute("watching");
 	const requestBody = {
 		"email": email,
-		"turnon": setWatch
+		"turnon": !isWatched
 	}
 	fetch(`http://localhost:${BACKEND_PORT}/user/watch`, {
 		method: "PUT",
@@ -772,7 +789,14 @@ function watchUser(email, setWatch) {
 		if (data.error) {
 			alert(data.error);
 		} else {
-			console.log("watched");
+			if (isWatched) {
+				watchButton.removeAttribute("watching");
+				watchButton.innerText = "➕ Watch";
+			}
+			else {
+				watchButton.setAttribute("watching", "");
+				watchButton.innerText = "✔️ Watching";
+			}
 		}
 	})
 }

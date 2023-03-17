@@ -86,10 +86,11 @@ i {
 /* Error Pop up end */
 
 button {
-    margin: 0;
+    /* margin: 0;
     padding: 0;
     border: none;
-    box-sizing: border-box;
+    box-sizing: border-box; */
+    cursor: pointer;
 }
 
 .intro-screen {
@@ -125,6 +126,7 @@ button {
     color: rgb(102, 52, 127);
     font-size: 15px;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    border: 0;
 }
 
 .btn-leave:hover {
@@ -168,7 +170,6 @@ input {
         0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
     border-radius: 13px;
     background-color: white;
-
 }
 
 .job-content {
@@ -178,6 +179,7 @@ input {
     margin: 20px 0;
     /* border: 1px solid green; */
     word-break: break-word;
+    /* border: 1px solid purple; */
 }
 
 .job-img {
@@ -188,6 +190,7 @@ input {
 
 .job-description {
     flex: 1;
+    /* border: 1px solid red; */
 }
 
 p {
@@ -204,6 +207,7 @@ h5 {
 .fa-thumbs-up {
     color: rgb(32, 117, 249);
     font-size: 16px;
+    cursor: pointer;
 }
 
 .fa-thumbs-up:hover {
@@ -227,6 +231,7 @@ h5 {
 
 .hover-underline:hover {
     text-decoration: underline;
+    cursor: pointer;
 }
 
 #profile-info {
@@ -234,9 +239,6 @@ h5 {
     flex-direction: column;
     align-items: center;
     margin: 30px 0;
-    /* box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    border-radius: 13px; */
 }
 
 .other-profile-page {
@@ -253,6 +255,20 @@ h5 {
     margin: 10px 0 0 0;
 }
 
+#watch-button {
+    padding: 5px 15px;
+    border-radius: 30px;
+    color: white;
+    background-color: rgba(102, 52, 127);
+    border: 0;
+    margin-top: 10px;
+}
+
+#watch-button:hover {
+    background-color: rgb(55, 48, 107);
+    transition: 0.4s;
+}
+
 .watchers {
     display: inline;
     font-size: 10px;
@@ -265,12 +281,24 @@ h5 {
     align-items: center;
 }
 
-.edit-job-buttons {
+.edit-job-buttons-father {
     position: relative;
-    right: 0px;
+}
+
+.edit-job-buttons {
+    position: absolute;
+    right: -580px;
+    /* bottom: 0; */
+    /* displ: right; */
     word-break: normal;
-    /* width: 0; */
+
+    /* border: 1px solid black; */
+    width: 70px;
     /* height: 0; */
+}
+
+.job-update {
+    margin-bottom: 5px;
 }
 
 #update-profile {

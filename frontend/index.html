@@ -20,7 +20,8 @@
                 <a class="nav-logo"><img src="images/logo.png" style="height:30px"></a>
                 <a><button id="login" class="nav-login">Login</button></a>
                 <a><button id="register" class="nav-register">Register</button></a>
-                <a><button id="nav-main-feed-button" class="nav-main-feed"><i class="fa-solid fa-house"></i></button></a>
+                <a><button id="nav-main-feed-button" class="nav-main-feed"><i
+                            class="fa-solid fa-house"></i></button></a>
                 <div class="nav-right">
                     <a><button id="nav-profile-button"><i id="test" class="fa-regular fa-user"></i></button></a>
                 </div>
@@ -144,21 +145,28 @@
             <div id="create-job-container">
                 <input id="create-job" placeholder="Create Job">
             </div>
+            <div class="job-post">
+                <div class="edit-job-buttons-father">
+                    <div class="edit-job-buttons">
+                        <button class="job-update">Update</button>
+                        <button>Delete</button>
+                    </div>
+                </div>
+                <div class="job-content">
+                    <!-- <div id="img"> -->
+                    <img src="images/logo.png" class="job-img">
+                    <!-- </div> -->
+                    <div class="job-description">
+                        <h5>Lil Bro (JOB)</h5>
+                        <div class="job-start-date">Start date: 10/10/2000</div><br>
+                        <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going
+                            8th
+                            every gam lil bro out here lil broing and going 8th every gam</p>
+                    </div>
 
-            <div class="job-content">
-                <!-- <div id="img"> -->
-                <img src="images/logo.png" class="job-img">
-                <!-- </div> -->
-                <div class="job-description">
-                    <h5>Lil Bro (JOB)</h5>
-                    <div class="job-start-date">Start date: 10/10/2000</div><br>
-                    <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going 8th
-                        every gam lil bro out here lil broing and going 8th every gam</p>
                 </div>
-                <div class="edit-job-buttons">
-                    <button>Update</button>
-                    <button>Delete</button>
-                </div>
+
+
             </div>
         </div>
 
@@ -202,8 +210,8 @@
                 <input id="profile-name-update" placeholder="Name">
                 <input id="profile-picture-update" type="file" accept="image/*">
                 <input id="email-update" placeholder="Email Address">
-                <input id="password-update" placeholder="New Password">
-                <input id="confirm-password-update" placeholder="Confirm Password">
+                <input id="password-update" type="password" placeholder="New Password">
+                <input id="confirm-password-update" type="password" placeholder="Confirm Password">
                 <button id="update-profile-btn">Update Profile</button>
             </div>
         </div>
