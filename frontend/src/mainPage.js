@@ -286,34 +286,34 @@ function generatePost(jobPost) {
 	likeCommentBar.setAttribute("class", "likes-comments-bar");
 	const likes = document.createElement("div");
 	likes.setAttribute("class", "likes");
-	const likeBtn = document.createElement("button");
-	likeBtn.setAttribute("class", "like-button");
+	const likeSpan = document.createElement("span");
+	// likeBtn.setAttribute("class", "like-span");
 	// Check if post has been liked
 	const isLiked = jobPost.likes.some((user) => user.userId === authID);
 	const likeIcon = document.createElement("i");
 	if (isLiked) {
 		likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
-		likeBtn.setAttribute("liked", "");
+		likeSpan.setAttribute("liked", "");
 	} else {
 		likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
-		likeBtn.removeAttribute("liked");
+		likeSpan.removeAttribute("liked");
 	}
-	likeBtn.appendChild(likeIcon);
+	likeSpan.appendChild(likeIcon);
 
-	likeBtn.setAttribute("id", `${authID}${jobPost.id}`)
-	likeBtn.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
+	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
+	likeSpan.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
 	// Num Likes
-	const numLikes = document.createElement("span");
-	numLikes.innerText = `${jobPost.likes.length} likes`
+	const numLikes = document.createElement("p");
+	numLikes.innerText = `  ${jobPost.likes.length} likes`
 	numLikes.setAttribute("class", "hover-underline");
 	numLikes.addEventListener("click", () => displayLikes(jobPost.likes));
 	// Num of Comments
-	const numComments = document.createElement("span");
+	const numComments = document.createElement("p");
 	numComments.setAttribute("class", "hover-underline");
 	numComments.innerText = `${jobPost.comments.length} comments`;
 	// numComments.addEventListener("click", () => showComments())
 
-	likes.appendChild(likeBtn);
+	likes.appendChild(likeSpan);
 	likes.appendChild(numLikes);
 	likeCommentBar.appendChild(likes);
 	likeCommentBar.appendChild(numComments);
@@ -478,10 +478,10 @@ function displayLikes(likeData) {
 
 
 // Function to like post
-function likePost(postID, btnId, likeIcon) {
+function likePost(postID, spanId, likeIcon) {
 	// if (self.innerText === "notLiked") {}
-	const btn = document.getElementById(btnId);
-	const isLiked = btn.hasAttribute("liked");
+	const likeSpan = document.getElementById(spanId);
+	const isLiked = likeSpan.hasAttribute("liked");
 	const requestBody = {
 		"id": postID,
 		"turnon": !isLiked,
@@ -501,11 +501,11 @@ function likePost(postID, btnId, likeIcon) {
 			alert(data.error);
 		} else {
 			if (isLiked) {
-				btn.removeAttribute("liked");
+				likeSpan.removeAttribute("liked");
 				likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
 			}
 			else {
-				btn.setAttribute("liked", "");
+				likeSpan.setAttribute("liked", "");
 				likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
 			}
 		}
@@ -606,13 +606,16 @@ function generateProfile(userData, isOwnProfile) {
 
 	// Generate jobs
 	// Delete job postings first
-	Array.from(document.getElementsByClassName("job-content")).forEach((jobPost) => {
+	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
 	});
 	const profilePage = document.getElementById("profile-page");
 	userData.jobs.forEach((jobPost) => {
+		const jobContainer = document.createElement("div");
+		jobContainer.setAttribute("class", "job-post");
 		const jobContent = createJobContent(jobPost, isOwnProfile);
-		profilePage.appendChild(jobContent);
+		jobContainer.appendChild(jobContent);
+		profilePage.appendChild(jobContainer);
 	});
 }
 
