@@ -15,10 +15,6 @@ main {
     align-items: center;
 }
 
-i {
-    font-size: 30px;
-}
-
 #nav {
     background-color: rgb(102, 52, 127);
     /* display: absolute; */
@@ -45,7 +41,6 @@ i {
     top: 0;
     width: 100%;
     height: 100%;
-    /* overflow: auto; */
     background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -61,9 +56,9 @@ i {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
-    border: 1px solid black;
     width: 40%;
     text-align: center;
+    display: block;
 }
 
 .close {
@@ -79,17 +74,10 @@ i {
     cursor: pointer;
 }
 
-.popup-text {
-    display: inline;
-}
-
 /* Error Pop up end */
 
 button {
-    /* margin: 0;
-    padding: 0;
-    border: none;
-    box-sizing: border-box; */
+    border: 0;
     cursor: pointer;
 }
 
@@ -107,7 +95,6 @@ button {
 .btn-submit {
     width: 311px;
     height: 30px;
-    border: 1px;
     border-radius: 6px;
     margin: 7px;
     background-color: rgb(102, 52, 127);
@@ -116,7 +103,9 @@ button {
 
 }
 
-.btn-submit:hover {
+.btn-submit:hover,
+.post-comment-button:hover,
+#watch-button:hover {
     background-color: rgb(55, 48, 107);
     transition: 0.4s;
 }
@@ -126,7 +115,6 @@ button {
     color: rgb(102, 52, 127);
     font-size: 15px;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    border: 0;
 }
 
 .btn-leave:hover {
@@ -142,12 +130,6 @@ input {
     padding: 1px 5px;
     /* border-: 5px; */
 }
-
-/* .job-container {
-    border: 1px solid magenta;
-    margin: 5px;
-    padding: 10px;
-} */
 
 #main-page {
     display: flex;
@@ -220,12 +202,24 @@ h5 {
     justify-content: space-between;
 }
 
-.post-comment {
+.post-comment-div {
     width: 100%;
     display: flex;
 }
 
-.add-comment {
+.post-comment-button {
+    align-items: center;
+    margin: 0 0 0 5px;
+    /* margin-top: 10px; */
+    padding: 0 15px;
+    /* height: 10px; */
+    border-radius: 15px;
+    margin: 5px 0 5px 10px;
+    background-color: rgb(102, 52, 127);
+    color: white;
+}
+
+.comment-input {
     width: 80%;
 }
 
@@ -260,16 +254,16 @@ h5 {
     border-radius: 30px;
     color: white;
     background-color: rgba(102, 52, 127);
-    border: 0;
     margin-top: 10px;
 }
 
-#watch-button:hover {
-    background-color: rgb(55, 48, 107);
-    transition: 0.4s;
+/* .watcher  */
+.liked-user,
+.watcher {
+    display: block;
 }
 
-.watchers {
+.watchers-span {
     display: inline;
     font-size: 10px;
 }
@@ -281,6 +275,20 @@ h5 {
     align-items: center;
 }
 
+#create-job-btn {
+    font-size: 20px;
+    border-radius: 10px;
+    background-color: rgb(4, 170, 109);
+    color: white;
+    padding: 5px 13px;
+    margin-top: -10px;
+}
+
+#create-job-btn:hover {
+    background-color: rgb(4, 143, 92);
+    transition: 0.4s;
+}
+
 .edit-job-buttons-father {
     position: relative;
 }
@@ -288,13 +296,8 @@ h5 {
 .edit-job-buttons {
     position: absolute;
     right: -580px;
-    /* bottom: 0; */
-    /* displ: right; */
     word-break: normal;
-
-    /* border: 1px solid black; */
     width: 70px;
-    /* height: 0; */
 }
 
 .job-update {
@@ -308,30 +311,8 @@ h5 {
     right: -80px;
 }
 
-#create-job-popup {
-    display: None;
-    position: fixed;
+ #create-job-popup {
     z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-#create-job-content {
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-    text-align: center;
 }
 
 #update-profile-popup {
@@ -372,57 +353,6 @@ h5 {
 }
 
 #update-job-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-    text-align: center;
-}
-
-/* Display Likes */
-#display-likes-popup {
-    display: None;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-#display-likes-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-    text-align: center;
-}
-
-#display-watchers-popup {
-    display: None;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-#display-watchers-content {
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -18,8 +18,8 @@
             <nav>
                 <a>LurkforWork</a>
                 <a class="nav-logo"><img src="images/logo.png" style="height:30px"></a>
-                <a><button id="login" class="nav-login">Login</button></a>
-                <a><button id="register" class="nav-register">Register</button></a>
+                <a><button id="nav-login" class="nav-login">Login</button></a>
+                <a><button id="nav-register" class="nav-register">Register</button></a>
                 <a><button id="nav-main-feed-button" class="nav-main-feed"><i
                             class="fa-solid fa-house"></i></button></a>
                 <div class="nav-right">
@@ -65,10 +65,10 @@
                 </span>
                 <h3 id="error-title">ERROR!</h3>
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <div id="error-text"></div>
+                <span id="error-text"></span>
             </div>
         </div>
-        <!-- Success Pop -->
+        <!-- Success Popup -->
         <div id="success-popup" class="popup">
             <div class="popup-content">
                 <span class="close" id="success-close">
@@ -76,7 +76,7 @@
                 </span>
                 <h3 id="success-title">SUCCESS!</h3>
                 <i class="fa-solid fa-check"></i>
-                <div id="success-text" class="popup-text"></div>
+                <span id="success-text"></span>
             </div>
         </div>
 
@@ -143,7 +143,9 @@
 
             <!-- Create job (appears for own profile) -->
             <div id="create-job-container">
-                <input id="create-job" placeholder="Create Job">
+                <button id="create-job-btn">
+                    <i class="fa-solid fa-plus"></i> Create Job
+                </button>
             </div>
             <div class="job-post">
                 <div class="edit-job-buttons-father">
@@ -163,33 +165,45 @@
                             8th
                             every gam lil bro out here lil broing and going 8th every gam</p>
                     </div>
-
                 </div>
-
-
             </div>
         </div>
 
-        <div id="display-likes-popup">
-            <div id="display-likes-content">
-                <span class="close" id="display-likes-close">&times;</span>
+        <div id="display-likes-popup" class="popup">
+            <div id="display-likes-content" class="popup-content">
+                <span class="close" id="display-likes-close">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+                <h3>
+                    Likes <i class="fa-solid fa-thumbs-up"></i>
+                </h3>
             </div>
         </div>
 
-        <div id="display-watchers-popup">
-            <div id="display-watchers-content">
-                <span class="close" id="display-watchers-close">&times;</span>
+        <div id="display-watchers-popup" class="popup">
+            <div id="display-watchers-content" class="popup-content">
+                <span class="close" id="display-watchers-close">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+                <h3>
+                    Watchers <i class="fa-solid fa-eye"></i>
+                </h3>
             </div>
         </div>
 
-        <div id="create-job-popup">
-            <div id="create-job-content">
-                <span class="close" id="create-job-close">&times;</span>
+        <div id="create-job-popup" class="popup">
+            <div id="create-job-content" class="popup-content">
+                <span class="close" id="create-job-close">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+                <h3>
+                    Create Job <i class="fa-solid fa-briefcase"></i>
+                </h3>
                 <input id="job-name-input" placeholder="Job Name">
                 <input id="job-img-input" type="file" accept="image/*">
                 <input id="start-date-input" placeholder="Start Date">
                 <input id="job-description-input" placeholder="Description">
-                <button id="create-job-btn">Create Job</button>
+                <button id="create-job-submit">Create Job</button>
             </div>
         </div>
 
