@@ -28,7 +28,7 @@ window.addEventListener("scroll", () => {
 	}
 });
 
-setInterval(liveUpdate, 1000);
+// setInterval(liveUpdate, 1000);
 
 // Opens the page in login screen
 loadPage("login-screen");
