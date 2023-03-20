@@ -81,59 +81,16 @@
         </div>
 
         <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div id="main-page" class="page">
-            <div class="job-post">
-                <span class="hover-underline">Handy Wang</span>
-                <span class="job-post-date">Posted: 69/69</span>
-
-                <div class="job-content">
-                    <img src="images/logo.png" class="job-img">
-                    <div class="job-description">
-                        <h5>Lil Bro (JOB)</h5>
-                        <div class="job-start-date">Start date: 10/10/2000</div><br>
-                        <p>lil bro out here lil broing and going 8th every game lil bro out here lil broing and going
-                            8th every gam lil bro out here lil broing and going 8th every gam</p>
-                    </div>
-                </div>
-
-                <div class="likes-comments-bar">
-                    <div id="likes">
-                        <button class="like-button"><i id="like-icon" class="fa-regular fa-thumbs-up"></i></button>
-                        <span class="hover-underline">10 likes</span>
-                    </div>
-                    <span class="hover-underline">10 comments</span>
-                </div>
-
-                <div id="comments">
-                    <div class="comment"><span
-                            class="hover-underline">LILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRB
-                            OLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBOLILRBO</span>
-                        <span class="comment-content">: lile bro broing hard lol brop</span>
-                    </div>
-                </div>
-
-                <div class="post-comment">
-                    <!-- <div id="comment-input"> -->
-                    <input placeholder="Add a comment" class="add-comment">
-                    <!-- </div> -->
-                    <button class="post-comment-button">Post</button>
-                </div>
-                <p>
-                </p>
-
-            </div>
-        </div>
-
-        <!-- <button id="load-user-info">Load User Info</button> -->
+        <div id="main-page" class="page"></div>
 
         <!-- Profile Page -->
         <div id="profile-page" class="page">
             <div id="profile-info">
                 <!-- Update for own profile -->
-                <div id="update-profile">
-                    <button id="edit-profile">Update</button>
+                <div id="update-profile-div">
+                    <button id="update-profile-btn">Update</button>
                 </div>
-                <img src="images/logo.png" alt="Avatar" id="profile-img">
+                <img alt="profile-photo" id="profile-img">
                 <h3 id="profile-name">Handy Wang (My profile)</h3>
                 <p id="profile-email">handywang@gmail.com</p>
 
@@ -169,64 +126,11 @@
             </div>
         </div>
 
-        <div id="display-likes-popup" class="popup">
-            <div id="display-likes-content" class="popup-content">
-                <span class="close" id="display-likes-close">
+        <div id="generic-popup" class="popup">
+            <div id="generic-popup-content" class="popup-content">
+                <span class="close-popup" id="generic-close-span">
                     <i class="fa-sharp fa-regular fa-circle-xmark"></i>
                 </span>
-                <h3>
-                    Likes <i class="fa-solid fa-thumbs-up"></i>
-                </h3>
-            </div>
-        </div>
-
-        <div id="display-watchers-popup" class="popup">
-            <div id="display-watchers-content" class="popup-content">
-                <span class="close" id="display-watchers-close">
-                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
-                </span>
-                <h3>
-                    Watchers <i class="fa-solid fa-eye"></i>
-                </h3>
-            </div>
-        </div>
-
-        <div id="create-job-popup" class="popup">
-            <div id="create-job-content" class="popup-content">
-                <span class="close" id="create-job-close">
-                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
-                </span>
-                <h3>
-                    Create Job <i class="fa-solid fa-briefcase"></i>
-                </h3>
-                <input id="job-name-input" placeholder="Job Name">
-                <input id="job-img-input" type="file" accept="image/*">
-                <input id="start-date-input" placeholder="Start Date">
-                <input id="job-description-input" placeholder="Description">
-                <button id="create-job-submit">Create Job</button>
-            </div>
-        </div>
-
-        <div id="update-job-popup">
-            <div id="update-job-content">
-                <span class="close" id="update-job-close">&times;</span>
-                <input id="update-job-name-input" placeholder="Job Name">
-                <input id="update-job-img-input" type="file" accept="image/*">
-                <input id="update-start-date-input" placeholder="Start Date">
-                <input id="update-job-description-input" placeholder="Description">
-                <button id="update-job-btn">Update Job</button>
-            </div>
-        </div>
-
-        <div id="update-profile-popup">
-            <div id="update-profile-content">
-                <span class="close" id="profile-popup-close">&times;</span>
-                <input id="profile-name-update" placeholder="Name">
-                <input id="profile-picture-update" type="file" accept="image/*">
-                <input id="email-update" placeholder="Email Address">
-                <input id="password-update" type="password" placeholder="New Password">
-                <input id="confirm-password-update" type="password" placeholder="Confirm Password">
-                <button id="update-profile-btn">Update Profile</button>
             </div>
         </div>
 

@@ -5,6 +5,30 @@ import { fileToDataUrl } from './helpers.js';
 // Global Variables
 let token = null;
 let authID = null;
+let startIndex = 0;
+let loading = false;
+
+window.addEventListener("scroll", () => {
+	// const mainPage = document.getElementById("main-page")
+	// mainPage.getBoundingClientRect
+	const mainPage = document.getElementById("main-page");
+	if (mainPage.style.display === "") {
+		const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+		console.log(startIndex);
+
+		if (scrollTop + clientHeight >= scrollHeight && !loading) {
+			loading = true;
+			startIndex += 5;
+			showFeed(startIndex);
+			console.log(startIndex);
+			// loadMoreContent();
+			// console.log("meowmeow");
+			loading = false;
+		}
+	}
+});
+
+setInterval(liveUpdate, 1000);
 
 // Opens the page in login screen
 loadPage("login-screen");
@@ -18,7 +42,7 @@ function loadPage(pageId) {
 }
 
 document.getElementById("nav-main-feed-button").addEventListener("click", () => {
-	showFeed();
+	showFeedStart(0);
 });
 
 document.getElementById("nav-profile-button").addEventListener("click", () => {
@@ -35,6 +59,16 @@ function initPost(requestBody) {
 	}
 }
 
+function fetchGetUserData(user) {
+	return fetch(`http://localhost:${BACKEND_PORT}/user?userId=${user}`, {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token,
+		}
+	})
+		.then(response => response.json())
+}
 
 ////////////////////////
 ///// 2.1.1 Login //////
@@ -58,7 +92,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 
 	// Check email and pw aren't empty
 	if (loginEmail === "" || loginPw === "") {
-		popup("Please enter a valid email or password.", false)
+		errorOrSuccessPopup("Please enter a valid email or password.", false)
 		return;
 	}
 
@@ -71,13 +105,13 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
-				popup("Please enter a valid email or password.", false);
+				errorOrSuccessPopup("Please enter a valid email or password.", false);
 			}
 			else {
 				token = data.token;
 				authID = data.userId;
 				// Load main page after login
-				showFeed();
+				showFeed(0);
 			}
 		});
 });
@@ -160,69 +194,99 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 ///// 2.1.3 Error Popup //////
 //////////////////////////////
 
-const errorPopup = document.getElementById('error-popup');
-const successPopup = document.getElementById('success-popup');
+// Create a generic popup
+// Returns the popup content for appending children
+function showPopup() {
+	const popup = document.getElementById("generic-popup");
+	const popupContent = document.getElementById("generic-popup-content");
+	const closePopupSpan = document.getElementById("generic-close-span");
+	closePopupSpan.addEventListener('click', () => {
+		// Hide the popup
+		popup.style.display = "None";
+	});
+	while (popupContent.childNodes.length > 2) {
+		popupContent.removeChild(popupContent.lastChild);
+	}
 
-// Get error popup elements
-function popup(message, success) {
-	let popupText;
-	let popupType;
-	if (success) {
-		popupText = document.getElementById('success-text');
-		popupType = successPopup;
-	}
-	else {
-		popupText = document.getElementById('error-text');
-		popupType = errorPopup;
-	}
-	popupType.style.display = 'block';
-	popupText.innerText = message;
+	popup.style.display = "block";
+	return popupContent;
 }
 
-// Add event listener to close button
-const closeError = document.getElementById('error-close');
-closeError.addEventListener('click', () => {
-	// Hide the popup
-	errorPopup.style.display = 'none';
-});
+// Creates an h3 with an icon
+function makePopupHeader(headerText, headerIconClass) {
+	const popupHeader = document.createElement("h3");
+	popupHeader.innerText = headerText;
+	if (headerIconClass) {
+		const popupHeaderIcon = document.createElement("i");
+		popupHeaderIcon.setAttribute("class", headerIconClass);
+		popupHeader.appendChild(popupHeaderIcon);
+	}
+	return popupHeader;
+}
 
-const closeSuccess = document.getElementById('success-close');
-closeSuccess.addEventListener('click', () => {
-	// Hide the popup
-	successPopup.style.display = 'none';
-});
+function errorOrSuccessPopup(message, success) {
+	const popupContent = showPopup();
+	let headerText = "";
+	let headerIconClass = "";
+
+	const popupHeader = document.createElement("h3");
+
+	if (success) {
+		headerText = "SUCCESS!";
+		headerIconClass = "fa-solid fa-check";
+		popupHeader.style.color = "green";
+
+	}
+	else {
+		headerText = "ERROR!";
+		headerIconClass = "fa-solid fa-triangle-exclamation";
+		popupHeader.style.color = "rgb(155, 10, 10)";
+	}
+	popupHeader.innerText = headerText;
+	const popupHeaderIcon = document.createElement("i");
+	popupHeaderIcon.setAttribute("class", headerIconClass);
+
+	popupContent.appendChild(popupHeader);
+	popupContent.appendChild(popupHeaderIcon);
+	const popupMessage = document.createElement("span");
+	popupMessage.innerText = ` ${message}`;
+
+	popupContent.appendChild(popupMessage);
+}
 
 //////////////////////////////
 ///// 2.2.1 Basic Feed ///////
 ////////////////////////////// TODO: MAKE SURE TO SHOW IN REVERSE CHRONOLOGICAL
 
+function showFeedStart() {
+	startIndex = 0;
+	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
+		jobPost.remove();
+	});
+	showFeed(startIndex)
+}
+
+
 // Main function to show feed.
-function showFeed() {
+function showFeed(startIndexNum) {
 	loadPage("main-page");
 	// Get the job feed
 	let init = {
 		method: "GET",
 		headers: {
 			'Content-Type': 'application/json',
-			'Authorization': token,
+			'Authorization': token
 		}
 	}
-	// DEFAULT SET START INDEX TO 0
-	const start_index = 0;
-
-	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=${start_index}`, init)
+	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=${startIndexNum}`, init)
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
 				alert(data.error);
 			} else {
-				Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
-					jobPost.remove();
-				});
 				for (const jobPost of data) {
 					generatePost(jobPost);
 				}
-
 			}
 		})
 }
@@ -236,21 +300,13 @@ function generatePost(jobPost) {
 	creatorSpan.setAttribute("class", "hover-underline");
 	creatorSpan.addEventListener("click", () => loadProfileScreen(jobPost.creatorId));
 
-	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${jobPost.creatorId}`, {
-		method: "GET",
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': token,
+	fetchGetUserData(jobPost.creatorId).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			creatorSpan.innerText = data.name;
 		}
 	})
-		.then(response => response.json())
-		.then(data => {
-			if (data.error) {
-				alert(data.error);
-			} else {
-				creatorSpan.innerText = data.name;
-			}
-		})
 
 	// Job Post Date
 	const jobDate = document.createElement("div");
@@ -303,6 +359,8 @@ function generatePost(jobPost) {
 
 	// Comments section (TODO: hide and unhide this in another function to show/unshow)
 	const commentSection = document.createElement("div");
+	commentSection.setAttribute("class", `commment${jobPost.id}`);
+
 	for (const commentInfo of jobPost.comments) {
 		const comment = document.createElement("div");
 		comment.setAttribute("class", "comment");
@@ -405,7 +463,9 @@ function createJobContent(jobPost) {
 
 function displayLikes(likeData) {
 	// Popup likes
-	document.getElementById("display-likes-popup").style.display = "block";
+	const popupContent = showPopup();
+	popupContent.appendChild(makePopupHeader("Likes ", "fa-solid fa-thumbs-up"));
+
 	// Clear current likes
 	Array.from(document.getElementsByClassName("liked-user")).forEach((user) => {
 		user.remove();
@@ -416,17 +476,12 @@ function displayLikes(likeData) {
 		user.setAttribute("class", "liked-user hover-underline");
 		user.addEventListener("click", () => {
 			loadProfileScreen(userInfo.userId);
-			document.getElementById("display-likes-popup").style.display = "None";
+			document.getElementById("generic-popup").style.display = "None";
 		});
 		user.innerText = `${userInfo.userName} (${userInfo.userEmail})`
-		document.getElementById("display-likes-content").appendChild(user);
+		popupContent.appendChild(user);
 	}
 }
-
-const displayLikesClose = document.getElementById('display-likes-close');
-displayLikesClose.addEventListener('click', () => {
-	document.getElementById("display-likes-popup").style.display = "none";
-});
 
 ////////////////////////////////////////
 ///// 2.3.2 Show comments on a job /////
@@ -479,34 +534,24 @@ function likePost(postID, spanId, likeIcon) {
 
 function loadProfileScreen(userId) {
 	// Make a get request to get user info
-	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${userId}`, {
-		method: "GET",
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': token,
+	fetchGetUserData(userId).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			if (parseInt(userId) === authID) {
+				generateProfile(data, true);
+			} else {
+				generateProfile(data, false);
+			}
 		}
 	})
-		.then(response => response.json())
-		.then(data => {
-			if (data.error) {
-				alert(data.error);
-			} else {
-				if (parseInt(userId) === authID) {
-					console.log("own");
-					generateProfile(data, true);
-				} else {
-					console.log("not own");
-					generateProfile(data, false);
-				}
-			}
-		})
 }
 
 function generateProfile(userData, isOwnProfile) {
 	loadPage("profile-page");
 
-	if (isOwnProfile) document.getElementById("update-profile").style.display = "";
-	else document.getElementById("update-profile").style.display = "none";
+	if (isOwnProfile) document.getElementById("update-profile-div").style.display = "";
+	else document.getElementById("update-profile-div").style.display = "none";
 
 	document.getElementById("profile-name").innerText = userData.name;
 	document.getElementById("profile-email").innerText = userData.email;
@@ -514,7 +559,7 @@ function generateProfile(userData, isOwnProfile) {
 	let profileImg = document.getElementById("profile-img");
 	// TODO: Bonus default image
 	if (userData.image === undefined) {
-		profileImg.src = "images/defaultProfile.png";
+		profileImg.src = "images/defaultprofile.jpg";
 	}
 	else {
 		profileImg.src = userData.image;
@@ -609,13 +654,11 @@ function generateProfile(userData, isOwnProfile) {
 
 // Show watchers
 
-const displayWatchersClose = document.getElementById('display-watchers-close');
-displayWatchersClose.addEventListener('click', () => {
-	document.getElementById("display-watchers-popup").style.display = "None";
-});
-
 function displayWatchers(watcheeIds) {
-	document.getElementById("display-watchers-popup").style.display = "block";
+	const popupContent = showPopup();
+
+	popupContent.appendChild(makePopupHeader("Watchers ", "fa-solid fa-eye"));
+
 	Array.from(document.getElementsByClassName("watcher")).forEach((user) => {
 		user.remove();
 	});
@@ -625,24 +668,16 @@ function displayWatchers(watcheeIds) {
 		user.setAttribute("class", "watcher hover-underline");
 		user.addEventListener("click", () => {
 			loadProfileScreen(id);
-			document.getElementById("display-watchers-popup").style.display = "None";
+			document.getElementById("generic-popup").style.display = "None";
 		});
-		fetch(`http://localhost:${BACKEND_PORT}/user?userId=${id}`, {
-			method: "GET",
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': token,
+		fetchGetUserData(id).then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				user.innerText = data.name;
 			}
 		})
-			.then(response => response.json())
-			.then(data => {
-				if (data.error) {
-					alert(data.error);
-				} else {
-					user.innerText = data.name;
-				}
-			})
-		document.getElementById("display-watchers-content").appendChild(user);
+		popupContent.appendChild(user);
 	}
 }
 
@@ -650,83 +685,113 @@ function displayWatchers(watcheeIds) {
 ///// 2.4.3 Updating your profile  /////
 ////////////////////////////////////////
 
-const editProfileBtn = document.getElementById("update-profile");
-editProfileBtn.addEventListener("click", () => {
+function createInputDom(inputId, inputPlaceholder, inputType, inputAccept) {
+	const newInput = document.createElement("input");
+	newInput.setAttribute("id", inputId);
+	newInput.setAttribute("placeholder", inputPlaceholder);
+	newInput.setAttribute("type", inputType);
+	newInput.setAttribute("accept", inputAccept);
+	return newInput;
+}
+
+const updateProfileBtn = document.getElementById("update-profile-btn");
+updateProfileBtn.addEventListener("click", () => {
 	// Popup screen here
-	document.getElementById("update-profile-popup").style.display = "block";
+	const popupContent = showPopup();
+	popupContent.appendChild(makePopupHeader("Update Profile ", "fa-solid fa-user"));
+
+	const inputDiv = document.createElement("div");
+	inputDiv.setAttribute("class", "popup-input-content");
+
+	inputDiv.appendChild(createInputDom("update-profile-name", "Name"));
+	inputDiv.appendChild(createInputDom("update-profile-picture", undefined, "file", "image/*"));
+	inputDiv.appendChild(createInputDom("update-profile-email", "Email"));
+	inputDiv.appendChild(createInputDom("update-profile-password", "Password", "password"));
+	inputDiv.appendChild(createInputDom("update-profile-confirm-password", "Confirm password", "password"));
+	popupContent.appendChild(inputDiv);
+
+	let updateProfileSubmitButton = document.createElement("button");
+	updateProfileSubmitButton.innerText = "Submit";
+	updateProfileSubmitButton.setAttribute("class", "btn-submit");
+	popupContent.appendChild(updateProfileSubmitButton);
+	updateProfileSubmitButton.addEventListener("click", setUpdateProfileSubmitButton);
+
 	// Fill out the popup info
-	fetch(`http://localhost:${BACKEND_PORT}/user?userId=${authID}`, {
-		method: "GET",
+	fetchGetUserData(authID).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			document.getElementById("update-profile-name").value = data.name;
+			document.getElementById("update-profile-email").value = data.email;
+		}
+	})
+});
+
+function fetchPutUserData(requestBody) {
+	fetch(`http://localhost:${BACKEND_PORT}/user`, {
+		method: "PUT",
 		headers: {
 			'Content-Type': 'application/json',
 			'Authorization': token,
-		}
+		},
+		body: JSON.stringify(requestBody)
 	})
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
 				alert(data.error);
 			} else {
-				document.getElementById("profile-name-update").value = data.name;
-				document.getElementById("email-update").value = data.email;
+				// Close popup
+				document.getElementById("generic-popup").style.display = "None";
+				const popupContent = showPopup();
+				let popupHeader = makePopupHeader("Profile update successful ", "fa-solid fa-check");
+				popupHeader.style.color = "green";
+				popupContent.appendChild(popupHeader);
+
 			}
 		})
-});
+}
 
 // Add event listener to close button
-const profilePopupClose = document.getElementById('profile-popup-close');
-profilePopupClose.addEventListener('click', () => {
-	// Hide the popup
-	document.getElementById("update-profile-popup").style.display = "None";
-});
+function setUpdateProfileSubmitButton() {
+	const name = document.getElementById("update-profile-name").value;
+	const imgFile = document.querySelector("#update-profile-picture").files[0];
+	const email = document.getElementById("update-profile-email").value;
+	const password = document.getElementById("update-profile-password").value;
+	const confirmPassword = document.getElementById("update-profile-confirm-password").value;
 
-const updateProfileBtn = document.getElementById("update-profile-btn");
-updateProfileBtn.addEventListener("click", () => {
-
-	let name = document.getElementById("profile-name-update").value;
-	let imgFile = document.querySelector('#profile-picture-update').files[0];
-	let email = document.getElementById("email-update").value;
-	let password = document.getElementById("password-update").value;
-	let confirmPassword = document.getElementById("confirm-password-update").value;
-
-	// Check name, email password is value
-	if (!isValidEmailAndName(email, name)) {
-		popup("Please enter valid email and name", false);
-		return;
-	}
+	// Check passwords are the same
 	if (password !== confirmPassword) {
-		popup("Passwords don't match", false);
+		errorOrSuccessPopup("Passwords don't match", false);
 		return;
 	}
+
+	let requestBody = {
+		"name": name,
+		"password": password
+	};
+
+	// TODO: Make email global variable so don't need to put twice
+	fetchGetUserData(authID).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			if (email !== data.email) {
+				fetchPutUserData({ "email": email });
+			}
+		}
+	});
+
 	if (imgFile) {
 		fileToDataUrl(imgFile).then((img) => {
-			const requestBody = {
-				"email": email,
-				"password": password,
-				"name": name,
-				"image": img,
-			}
-			fetch(`http://localhost:${BACKEND_PORT}/user`, {
-				method: "PUT",
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': token,
-				},
-				body: JSON.stringify(requestBody)
-			})
-				.then(response => response.json())
-				.then(data => {
-					if (data.error) {
-						alert(data.error);
-					} else {
-						popup("Not actually an error - Succesfully Updated Profile", true);
-						// Close popup
-						document.getElementById("update-profile-popup").style.display = "None";
-					}
-				})
+			Object.assign(requestBody, { "image": img });
+			fetchPutUserData(requestBody);
 		});
 	}
-});
+	else {
+		fetchPutUserData(requestBody);
+	}
+}
 
 ////////////////////////////////////////
 ///// 2.4.4 Watching/Unwatching  ///////
@@ -771,38 +836,48 @@ function watchUser(email, buttonId) {
 
 const createJobBtn = document.getElementById("create-job-btn");
 createJobBtn.addEventListener("click", () => {
-	document.getElementById("create-job-popup").style.display = "block";
-});
+	const popupContent = showPopup();
+	popupContent.appendChild(makePopupHeader("Create Job ", "fa-solid fa-briefcase"));
 
-// Add event listener to close button
-const createJobClose = document.getElementById('create-job-close');
-createJobClose.addEventListener('click', () => {
-	// Hide the popup
-	document.getElementById("create-job-popup").style.display = "None";
-});
+	const inputDiv = document.createElement("div");
+	inputDiv.setAttribute("class", "popup-input-content");
+
+	inputDiv.appendChild(createInputDom("create-job-title-input", "Job title"));
+	inputDiv.appendChild(createInputDom("create-job-img-input", undefined, "file", "image/*"));
+	inputDiv.appendChild(createInputDom("create-job-date-input", "Start date"));
+	inputDiv.appendChild(createInputDom("create-job-description-input", "Job description"));
+	popupContent.appendChild(inputDiv);
+
+	let createJobSubmitButton = document.createElement("button");
+	createJobSubmitButton.innerText = "Submit";
+	createJobSubmitButton.setAttribute("class", "btn-submit");
+	popupContent.appendChild(createJobSubmitButton);
+	const errorSpan = document.createElement("span");
+	errorSpan.setAttribute("id", "create-job-error");
+	popupContent.appendChild(errorSpan);
+
+	createJobSubmitButton.addEventListener("click", () => {
+		const jobTitle = document.getElementById("create-job-title-input").value;
+		const jobImgFile = document.querySelector('#create-job-img-input').files[0];
+		const jobDate = document.getElementById("create-job-date-input").value;
+		const jobDescription = document.getElementById("create-job-description-input").value;
 
 
-const submitJobBtn = document.getElementById("create-job-submit");
-submitJobBtn.addEventListener("click", () => {
-
-	let title = document.getElementById("job-name-input").value;
-	let imgFile = document.querySelector('#job-img-input').files[0];
-	let startDate = document.getElementById("start-date-input").value;
-	let description = document.getElementById("job-description-input").value;
-
-	// Check everything is non-empty
-	if (title === "" || description === "" || startDate === "") {
-		popup("Name and description must not be empty", false);
-		return;
-	}
-
-	if (imgFile) {
-		fileToDataUrl(imgFile).then((img) => {
+		// Check everything is non-empty
+		if (!jobTitle || !jobDate || !jobImgFile) {
+			let errorText = "";
+			if (!jobTitle) errorText = "Please enter a job title";
+			else if (!jobDate) errorText = "Please enter a start date";
+			else errorText = "Please upload an image";
+			errorSpan.innerText = errorText;
+			return;
+		}
+		fileToDataUrl(jobImgFile).then((img) => {
 			const requestBody = {
-				"title": title,
+				"title": jobTitle,
 				"image": img,
-				"start": startDate,
-				"description": description
+				"start": jobDate,
+				"description": jobDescription
 			}
 
 			fetch(`http://localhost:${BACKEND_PORT}/job`, {
@@ -818,51 +893,70 @@ submitJobBtn.addEventListener("click", () => {
 					if (data.error) {
 						alert(data.error);
 					} else {
-						popup("Not actually an error - Succesfully made job", true);
-						// Close popup
-						document.getElementById("create-job-popup").style.display = "None";
+						document.getElementById("generic-popup").style.display = "None";
+						const popupContent = showPopup();
+						let popupHeader = makePopupHeader("Job creation successful ", "fa-solid fa-check");
+						popupHeader.style.color = "green";
+						popupContent.appendChild(popupHeader);
 					}
 				})
 		});
-	}
-	else popup("Image must not be empty", false);
+	});
 });
+
 
 ///////////////////////////////////////////
 ///// 2.5.1 Updating and deleting a job ///
 ///////////////////////////////////////////
 
 // Add event listener to close button
-const udpateJobClose = document.getElementById('update-job-close');
-udpateJobClose.addEventListener('click', () => {
-	document.getElementById("update-job-popup").style.display = "None";
-});
-
 function updateJob(jobData) {
-	document.getElementById("update-job-popup").style.display = "block";
+	const popupContent = showPopup();
+	popupContent.appendChild(makePopupHeader("Update Job ", "fa-solid fa-briefcase"));
 
-	document.getElementById("update-job-name-input").value = jobData.title;
-	document.getElementById("update-job-img-input").value = jobData.image;
-	document.getElementById("update-start-date-input").value = jobData.start;
+	const inputDiv = document.createElement("div");
+	inputDiv.setAttribute("class", "popup-input-content");
+
+	inputDiv.appendChild(createInputDom("update-job-title-input", "Job title"));
+	inputDiv.appendChild(createInputDom("update-job-img-input", undefined, "file", "image/*"));
+	inputDiv.appendChild(createInputDom("update-job-date-input", "Start date"));
+	inputDiv.appendChild(createInputDom("update-job-description-input", "Job description"));
+	popupContent.appendChild(inputDiv);
+
+	document.getElementById("update-job-title-input").value = jobData.title;
+	document.getElementById("update-job-date-input").value = jobData.start;
 	document.getElementById("update-job-description-input").value = jobData.description;
 
-	document.getElementById("update-job-btn").remove();
-	const updateButton = document.createElement("button");
-	updateButton.setAttribute("id", "update-job-btn");
-	updateButton.innerText = "Update";
-	document.getElementById("update-job-content").appendChild(updateButton);
+	let updateJobSubmitButton = document.createElement("button");
+	updateJobSubmitButton.innerText = "Submit";
+	updateJobSubmitButton.setAttribute("class", "btn-submit");
+	popupContent.appendChild(updateJobSubmitButton);
+	updateJobSubmitButton.addEventListener("click", () => {
+		const jobTitle = document.getElementById("update-job-title-input").value;
+		const jobImgFile = document.querySelector("#update-job-img-input").files[0];
+		const jobDate = document.getElementById("update-job-date-input").value;
+		const jobDescription = document.getElementById("update-job-description-input").value;
 
-	document.getElementById("update-job-btn").addEventListener("click", () => postJobUpdate(jobData.id));
+		let requestBody = {
+			"id": jobData.id,
+			"title": jobTitle,
+			"start": jobDate,
+			"description": jobDescription
+		};
+
+		if (jobImgFile) {
+			fileToDataUrl(jobImgFile).then((img) => {
+				Object.assign(requestBody, { "image": img });
+				fetchPutJobData(requestBody);
+			});
+		}
+		else {
+			fetchPutJobData(requestBody);
+		}
+	});
 }
 
-function postJobUpdate(jobId) {
-	const requestBody = {
-		"id": jobId,
-		"title": document.getElementById("update-job-name-input").value,
-		"image": document.getElementById("update-job-img-input").value,
-		"start": document.getElementById("update-start-date-input").value,
-		"description": document.getElementById("update-job-description-input").value
-	}
+function fetchPutJobData(requestBody) {
 	fetch(`http://localhost:${BACKEND_PORT}/job`, {
 		method: "PUT",
 		headers: {
@@ -876,9 +970,11 @@ function postJobUpdate(jobId) {
 			if (data.error) {
 				alert(data.error);
 			} else {
-				popup("Not actually an error - Succesfully updated job", true);
-				document.getElementById("update-job-popup").style.display = "None";
-				console.log(requestBody);
+				document.getElementById("generic-popup").style.display = "None";
+				const popupContent = showPopup();
+				let popupHeader = makePopupHeader("Job update successful ", "fa-solid fa-check");
+				popupHeader.style.color = "green";
+				popupContent.appendChild(popupHeader);
 			}
 		})
 }
@@ -899,8 +995,6 @@ function deleteJob(jobId) {
 		.then(data => {
 			if (data.error) {
 				alert(data.error);
-			} else {
-				popup("Not actually an error - Succesfully deleted job", true);
 			}
 		})
 }
