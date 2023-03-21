@@ -7,6 +7,8 @@ let token = null;
 let authID = null;
 let startIndex = 0;
 let loading = false;
+let allowNotifs = false;
+let currPostIds = [];
 
 window.addEventListener("scroll", () => {
 	// const mainPage = document.getElementById("main-page")
@@ -283,6 +285,8 @@ function showFeed(startIndexNum) {
 				alert(data.error);
 			} else {
 				for (const jobPost of data) {
+					if (!currPostIds.includes(jobPost.id)) currPostIds.push(jobPost.id);
+					console.log(currPostIds);
 					generatePost(jobPost);
 				}
 			}
@@ -456,7 +460,7 @@ function createJobContent(jobPost) {
 ///// 2.3.1 Show Likes on a job ////////
 ////////////////////////////////////////
 
-function generateLikes(likeSection ,likeData) {
+function generateLikes(likeSection, likeData) {
 	for (const userInfo of likeData) {
 		const user = document.createElement("span");
 		user.setAttribute("class", "liked-user hover-underline");
@@ -1039,8 +1043,9 @@ function liveUpdate() {
 }
 
 function liveUpdateJobPost(jobPostData) {
-	// Check job Post exsits
+	// Check job Post exsits - if doesn't - send push notif
 	if (document.getElementById(`jobPost${jobPostData.id}`) === null) {
+		pushNotifs(jobPostData);
 		return;
 	}
 
@@ -1059,6 +1064,8 @@ function liveUpdateJobPost(jobPostData) {
 
 	// Update Likes
 	const likeSection = document.getElementById(`likes${jobPostData.id}`);
+	if (likeSection === null) return;
+	console.log(likeSection);
 	likeSection.innerHTML = "";
 	generateLikes(likeSection, jobPostData.likes);
 }
@@ -1067,3 +1074,57 @@ function liveUpdateJobPost(jobPostData) {
 ///// 2.6.3 Push Notifs ///////////////////
 ///////////////////////////////////////////
 
+// Function to toggle notifs
+document.getElementById("nav-toggle-notifs").addEventListener("click", () => {
+	if (allowNotifs) {
+		allowNotifs = false;
+		document.getElementById("bell-icon").setAttribute("class", "fa-regular fa-bell-slash");
+	} else {
+		allowNotifs = true;
+		document.getElementById("bell-icon").setAttribute("class", "fa-solid fa-bell");
+	}
+})
+
+function pushNotifs() {
+	// Maybe check if user has turned on notifs
+	if (!allowNotifs) return;
+
+	// Fetch last 5 job posts
+	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=0`, {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token
+		}
+	})
+		.then(response => response.json())
+		.then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				for (const jobPost of data) {
+					if (!currPostIds.includes(jobPost.id)) {
+						currPostIds.push(jobPost.id);
+						// If you want to customise, chuck in data as argument
+						newNotifPopup();
+					}
+				}
+			}
+		})
+	
+}
+
+document.getElementById("notif-close-span").addEventListener("click", () => {
+	document.getElementById("notif-popup").style.display = "none";
+})
+
+document.getElementById("refresh-main-page").addEventListener("click", () => {
+	document.getElementById("notif-popup").style.display = "none";
+	showFeedStart();
+})
+
+
+function newNotifPopup() {
+	const notifPopup = document.getElementById("notif-popup");
+	notifPopup.style.display = "flex";
+}

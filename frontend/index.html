@@ -23,6 +23,8 @@
                 <a><button id="nav-main-feed-button" class="nav-main-feed"><i
                             class="fa-solid fa-house"></i></button></a>
                 <div class="nav-right">
+                    <!-- <i class="fa-regular fa-bell-slash"></i> -->
+                    <a><button id="nav-toggle-notifs"><i id="bell-icon" class="fa-regular fa-bell-slash"></i></button></a>
                     <a><button id="nav-profile-button"><i id="test" class="fa-regular fa-user"></i></button></a>
                 </div>
             </nav>
@@ -87,6 +89,17 @@
                 <span class="close-popup" id="generic-close-span">
                     <i class="fa-sharp fa-regular fa-circle-xmark"></i>
                 </span>
+            </div>
+        </div>
+
+        <div id="notif-popup">
+            <div id="generic-popup-content" class="popup-content">
+                <span class="close-popup" id="notif-close-span">
+                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
+                </span>
+
+                New Notif!
+                <button id="refresh-main-page">Refresh main page</button>
             </div>
         </div>
 
