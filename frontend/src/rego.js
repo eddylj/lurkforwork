@@ -5,15 +5,6 @@ import { fileToDataUrl } from './helpers.js';
 // Variables
 const regoForm = document.forms.rego_form;
 
-document.getElementById("register").addEventListener("click", () => {
-    var loginScreen = document.getElementById("rego-screen");
-    if (loginScreen.style.display === "none") {
-        loginScreen.style.display = "block";
-    }
-    else loginScreen.style.display = "none";
-}
-);
-
 
 document.getElementById("btn-register").addEventListener("click", (event) => {
     let regoEmail = regoForm.rego_email.value;
