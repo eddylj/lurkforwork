@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,86 +7,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- You can add your styles and scripts here -->
     <link rel="stylesheet" type="text/css" media="screen" href="styles/global.css" />
-    <script src="https://kit.fontawesome.com/222ab95cdb.js" crossorigin="anonymous"></script>
 </head>
-
 <body>
-    <!-- This is an example app structure, you can modify this as much as you choose -->
+    <!-- This is an example app structure, you can modify this as much as you choose --> 
     <header>
-        <div id="nav">
-            <nav>
-                <a>LurkforWork</a>
-                <a class="nav-logo"><img src="images/logo.png" style="height:30px"></a>
-                <a><button id="nav-login" class="nav-login">Login</button></a>
-                <a><button id="nav-register" class="nav-register">Register</button></a>
-                <a><button id="nav-main-feed-button" class="nav-main-feed"><i
-                            class="fa-solid fa-house"></i></button></a>
-                <div class="nav-right">
-                    <a><button id="nav-profile-button"><i id="test" class="fa-regular fa-user"></i></button></a>
-                </div>
-            </nav>
-        </div>
-
+        <h1>lurkforwork.com</h1>
+        <nav>
+            <li class="nav-logo"><img src="images/logo.png" style="height:30px"></li>
+            <li class="nav-login">Login</li>
+            <li class="nav-register">Register</li>
+        </nav>
     </header>
     <main role="main">
         <!-- app goes here -->
         <!-- Login Page -->
-        <div id="login-screen" class="intro-screen page">
+        <div id="login-screen" style="margin:20px; padding: 20px; border: 1px solid black;">
             <h1>Login</h1>
             <form name="login_form">
-                <input name="login_email" type="text" placeholder="Email Address"><br>
-                <input name="login_pw" type="password" placeholder="Password"><br>
-                <button id="btn-login" class="btn-submit">Login</button> <br>
-                Don't have an account?
-                <button id="btn-join" class="btn-leave">Join now</button>
+                Email: <input name="login_email" type="text"><br>
+                Password: <input name="login_pw" type="password"><br>
+                <button id="btn-login">Log in</button> <br>
+                Don't have an account?????????
+                <button id="btn-signup">Create new account</button>
             </form>
         </div>
 
         <!-- Registration Page -->
-        <div id="rego-screen" class="intro-screen page">
+        <div id="registration-screen" style="margin:20px; padding: 20px; border: 1px solid black">
             <h1>Register</h1>
-            <form name="rego_form">
-                <input name="rego_email" type="text" placeholder="Email Address"><br>
-                <input name="rego_name" type="text" placeholder="Name"><br>
-                <input name="rego_pw" type="password" placeholder="Password"><br>
-                <input name="rego_confirm_pw" type="password" placeholder="Confirm Password"><br>
-                <button id="btn-register" class="btn-submit">Register</button> <br>
-                Already have an account?
-                <button id="btn-signin" class="btn-leave">Sign In</button>
+            <form name ="rego_form">
+                Email: <input name="rego_email" type="text"><br>
+                Name: <input name="rego_name" type="text"><br>
+                Password: <input name="rego_pw" type="password"><br>
+                Confirm Password: <input name="rego_confirm_pw" type="password"><br>
+                <button id="btn-register">Register</button> <br>
+                Already have an account?????????
+                <button>Sign In</button>
             </form>
         </div>
-        <!-- MAIN PAGE STUB CODE (what feed may look like)-->
-        <div id="main-page" class="page"></div>
 
-        <!-- Profile Page -->
-        <div id="profile-page" class="page">
-            <div id="profile-info">
-                <!-- Update for own profile -->
-                <div id="update-profile-div">
-                    <button id="update-profile-btn">Update</button>
-                </div>
-                <img alt="profile-photo" id="profile-img">
-                <h3 id="profile-name"></h3>
-                <p id="profile-email"></p>
-
-                <span class="watchers hover-underline" id="profile-num-watchers"></span>
-                <button id="watch-button">Watch</button>
-            </div>
-
-            <!-- Create job (appears for own profile) -->
-            <div id="create-job-container">
-                <button id="create-job-btn">
-                    <i class="fa-solid fa-plus"></i> Create Job
-                </button>
-            </div>
+        <div style="margin:20px; padding: 20px; border: 1px solid black">
+            <p>Errorrorororor</p>
+            <button id="close-error">Close</button>
         </div>
 
-        <div id="generic-popup" class="popup">
-            <div id="generic-popup-content" class="popup-content">
-                <span class="close-popup" id="generic-close-span">
-                    <i class="fa-sharp fa-regular fa-circle-xmark"></i>
-                </span>
-            </div>
+        <!-- MAIN PAGE STUB CODE (what feed may look like)-->
+        <div id="main-page" style="margin: 20px; padding: 20px; border:1px solid black; display: flex; flex-direction: column;">
+            Token = <div id="token"></div>
+            UserId = <div id="userID"></div>
+            <button id="generate-feed">Generate Feed</button>
         </div>
 
     </main>
@@ -95,8 +63,9 @@
         <p>&copy; lurkforwork.com 2022</p>
     </footer>
     <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/login.js"></script>
+    <script type="module" src="src/rego.js"></script>
     <script type="module" src="src/mainPage.js"></script>
     <!-- <script type="module" src="src/x.js"></script> -->
 </body>
-
 </html>
