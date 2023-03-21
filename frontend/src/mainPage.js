@@ -28,8 +28,6 @@ window.addEventListener("scroll", () => {
 	}
 });
 
-// setInterval(liveUpdate, 1000);
-
 // Opens the page in login screen
 loadPage("login-screen");
 
@@ -295,6 +293,7 @@ function generatePost(jobPost) {
 	// Create Container for job post
 	const jobContainer = document.createElement("div");
 	jobContainer.setAttribute("class", "job-post");
+	jobContainer.setAttribute("id", `jobPost${jobPost.id}`);
 	// User name 
 	const creatorSpan = document.createElement("span");
 	creatorSpan.setAttribute("class", "hover-underline");
@@ -342,15 +341,24 @@ function generatePost(jobPost) {
 	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
 	likeSpan.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
 
+	// Number of likes
 	const numLikes = document.createElement("p");
+	numLikes.setAttribute("id", `numLikes${jobPost.id}`)
 	numLikes.innerText = `  ${jobPost.likes.length} likes`
 	numLikes.setAttribute("class", "hover-underline");
-	numLikes.addEventListener("click", () => displayLikes(jobPost.likes));
+
+	// Like section
+	const likeSection = document.createElement("div");
+	likeSection.setAttribute("id", `likes${jobPost.id}`);
+	generateLikes(likeSection, jobPost.likes);
+
+	numLikes.addEventListener("click", () => displayLikes(likeSection));
 
 	likesDiv.appendChild(likeSpan);
 	likesDiv.appendChild(numLikes);
 
 	const numComments = document.createElement("p");
+	numComments.setAttribute("id", `numComments${jobPost.id}`);
 	numComments.innerText = `${jobPost.comments.length} comments`;
 
 	likeCommentBar.appendChild(likesDiv);
@@ -359,22 +367,9 @@ function generatePost(jobPost) {
 
 	// Comments section (TODO: hide and unhide this in another function to show/unshow)
 	const commentSection = document.createElement("div");
-	commentSection.setAttribute("class", `commment${jobPost.id}`);
+	commentSection.setAttribute("id", `comments${jobPost.id}`);
 
-	for (const commentInfo of jobPost.comments) {
-		const comment = document.createElement("div");
-		comment.setAttribute("class", "comment");
-		const commentUser = document.createElement("span");
-		commentUser.innerText = commentInfo.userName;
-		commentUser.setAttribute("class", "hover-underline");
-		commentUser.addEventListener("click", () => loadProfileScreen(commentInfo.userId));
-		comment.appendChild(commentUser);
-		const commentContent = document.createElement("span");
-		commentContent.setAttribute("class", "comment-content");
-		commentContent.innerText = `: ${commentInfo.comment}`
-		comment.appendChild(commentContent);
-		commentSection.appendChild(comment);
-	}
+	generateComments(commentSection, jobPost.comments);
 	jobContainer.appendChild(commentSection);
 
 	// Post comment
@@ -461,16 +456,7 @@ function createJobContent(jobPost) {
 ///// 2.3.1 Show Likes on a job ////////
 ////////////////////////////////////////
 
-function displayLikes(likeData) {
-	// Popup likes
-	const popupContent = showPopup();
-	popupContent.appendChild(makePopupHeader("Likes ", "fa-solid fa-thumbs-up"));
-
-	// Clear current likes
-	Array.from(document.getElementsByClassName("liked-user")).forEach((user) => {
-		user.remove();
-	});
-	// Add likes
+function generateLikes(likeSection ,likeData) {
 	for (const userInfo of likeData) {
 		const user = document.createElement("span");
 		user.setAttribute("class", "liked-user hover-underline");
@@ -479,15 +465,37 @@ function displayLikes(likeData) {
 			document.getElementById("generic-popup").style.display = "None";
 		});
 		user.innerText = `${userInfo.userName} (${userInfo.userEmail})`
-		popupContent.appendChild(user);
+		likeSection.appendChild(user);
 	}
+}
+
+function displayLikes(likeSection) {
+	// Popup likes
+	const popupContent = showPopup();
+	popupContent.appendChild(makePopupHeader("Likes ", "fa-solid fa-thumbs-up"));
+	popupContent.appendChild(likeSection);
 }
 
 ////////////////////////////////////////
 ///// 2.3.2 Show comments on a job /////
 ////////////////////////////////////////
 
-// in the above function - generatePost
+function generateComments(commentSection, comments) {
+	for (const commentInfo of comments) {
+		const comment = document.createElement("div");
+		comment.setAttribute("class", "comment");
+		const commentUser = document.createElement("span");
+		commentUser.innerText = commentInfo.userName;
+		commentUser.setAttribute("class", "hover-underline");
+		commentUser.addEventListener("click", () => loadProfileScreen(commentInfo.userId));
+		comment.appendChild(commentUser);
+		const commentContent = document.createElement("span");
+		commentContent.setAttribute("class", "comment-content");
+		commentContent.innerText = `: ${commentInfo.comment}`
+		comment.appendChild(commentContent);
+		commentSection.appendChild(comment);
+	}
+}
 
 ////////////////////////////////////////
 ///// 2.3.3 Liking a job ///////////////
@@ -998,3 +1006,64 @@ function deleteJob(jobId) {
 			}
 		})
 }
+
+///////////////////////////////////////////
+///// 2.6.2 Live Update ///////////////////
+///////////////////////////////////////////
+
+setInterval(liveUpdate, 1000);
+
+function liveUpdate() {
+	// Check the user is logged in
+	if (authID === null) {
+		return;
+	}
+
+	fetch(`http://localhost:${BACKEND_PORT}/job/feed?start=0`, {
+		method: "GET",
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			for (const jobPost of data) {
+				liveUpdateJobPost(jobPost);
+			}
+		}
+	})
+}
+
+function liveUpdateJobPost(jobPostData) {
+	// Check job Post exsits
+	if (document.getElementById(`jobPost${jobPostData.id}`) === null) {
+		return;
+	}
+
+	// Update number of likes
+	let numLikes = document.getElementById(`numLikes${jobPostData.id}`);
+	numLikes.innerText = `${jobPostData.likes.length} likes`;
+
+	// Update number of comments
+	let numComments = document.getElementById(`numComments${jobPostData.id}`);
+	numComments.innerText = `${jobPostData.comments.length} comments`;
+
+	// Update comments
+	const commentSection = document.getElementById(`comments${jobPostData.id}`);
+	commentSection.innerHTML = "";
+	generateComments(commentSection, jobPostData.comments);
+
+	// Update Likes
+	const likeSection = document.getElementById(`likes${jobPostData.id}`);
+	likeSection.innerHTML = "";
+	generateLikes(likeSection, jobPostData.likes);
+}
+
+///////////////////////////////////////////
+///// 2.6.3 Push Notifs ///////////////////
+///////////////////////////////////////////
+
