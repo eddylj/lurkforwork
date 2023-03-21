@@ -325,3 +325,8 @@ h5 {
     align-items: center;
     border: 1px solid black;
 }
+
+/* Online status */
+#online-status {
+    display: "";
+}

@@ -10,11 +10,15 @@ let loading = false;
 let allowNotifs = false;
 let currPostIds = [];
 
+//////////////////////////////
+///// 2.6.1 Infinite Scroll //
+//////////////////////////////
+
 window.addEventListener("scroll", () => {
 	// const mainPage = document.getElementById("main-page")
 	// mainPage.getBoundingClientRect
 	const mainPage = document.getElementById("main-page");
-	if (mainPage.style.display === "") {
+	if (mainPage.style.display === "" && navigator.onLine) {
 		const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
 		console.log(startIndex);
 
@@ -42,7 +46,7 @@ function loadPage(pageId) {
 }
 
 document.getElementById("nav-main-feed-button").addEventListener("click", () => {
-	showFeedStart(0);
+	showFeedStart();
 });
 
 document.getElementById("nav-profile-button").addEventListener("click", () => {
@@ -111,7 +115,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 				token = data.token;
 				authID = data.userId;
 				// Load main page after login
-				showFeed(0);
+				showFeedStart();
 			}
 		});
 });
@@ -259,10 +263,18 @@ function errorOrSuccessPopup(message, success) {
 ////////////////////////////// TODO: MAKE SURE TO SHOW IN REVERSE CHRONOLOGICAL
 
 function showFeedStart() {
-	startIndex = 0;
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
 	});
+
+	// If offline, then show latest feed
+	if (!navigator.onLine) {
+		loadPage("main-page");
+		loadCachedFeed(authID);
+		return;
+	}
+
+	startIndex = 0;
 	showFeed(startIndex)
 }
 
@@ -284,9 +296,13 @@ function showFeed(startIndexNum) {
 			if (data.error) {
 				alert(data.error);
 			} else {
+				// Cache in local storage if most recent feed
+				if (startIndexNum === 0) {
+					localStorage.setItem(authID, JSON.stringify(data));
+				}
 				for (const jobPost of data) {
 					if (!currPostIds.includes(jobPost.id)) currPostIds.push(jobPost.id);
-					console.log(currPostIds);
+					// console.log(currPostIds);
 					generatePost(jobPost);
 				}
 			}
@@ -1128,3 +1144,190 @@ function newNotifPopup() {
 	const notifPopup = document.getElementById("notif-popup");
 	notifPopup.style.display = "flex";
 }
+
+///////////////////////////////////////////
+///// 2.7.1 Static feed offline access/////
+///////////////////////////////////////////
+
+// Function to check if online or offline
+document.addEventListener("DOMContentLoaded", function () {
+	checkOnline();
+	window.addEventListener('online',  checkOnline);
+	window.addEventListener('offline', checkOnline);
+  });
+
+function checkOnline() {
+	const onlineIcon = document.getElementById("online-status");
+	navigator.onLine ? onlineIcon.style.display = "none" : onlineIcon.style.display = "";
+	console.log(`Your network status is ${navigator.onLine ? "Online" : "Offline"} `);
+}
+
+function loadCachedFeed() {
+	const dataString = localStorage.getItem(authID);
+	let data = JSON.parse(dataString);
+	for (const jobPost of data) {
+		generatePostCached(jobPost);
+	}
+}
+
+
+function generatePostCached(jobPost) {
+	// Create Container for job post
+	const jobContainer = document.createElement("div");
+	jobContainer.setAttribute("class", "job-post");
+	jobContainer.setAttribute("id", `jobPost${jobPost.id}`);
+	// User name 
+	const creatorSpan = document.createElement("span");
+	creatorSpan.setAttribute("class", "hover-underline");
+	creatorSpan.addEventListener("click", () => loadProfileScreen(jobPost.creatorId));
+	
+	// fetchGetUserData(jobPost.creatorId).then(data => {
+	// 	if (data.error) {
+	// 		alert(data.error);
+	// 	} else {
+	// 		creatorSpan.innerText = data.name;
+	// 	}
+	// })
+	creatorSpan.innerText = jobPost.id;
+	
+	// Job Post Date
+	const jobDate = document.createElement("div");
+	jobDate.innerText = `Posted: ${jobPost.createdAt}`;
+	
+	jobContainer.appendChild(creatorSpan);
+	jobContainer.appendChild(jobDate);
+	
+	const jobContent = createJobContent(jobPost);
+	jobContainer.appendChild(jobContent);
+	
+	// Likes and comments bar
+	const likeCommentBar = document.createElement("div");
+	likeCommentBar.setAttribute("class", "likes-comments-bar");
+	
+	const likesDiv = document.createElement("div");
+	likesDiv.setAttribute("class", "likes");
+	
+	const likeSpan = document.createElement("span");
+	// Check if post has been liked by current user
+	const isLiked = jobPost.likes.some((user) => user.userId === authID);
+	const likeIcon = document.createElement("i");
+	if (isLiked) {
+		likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
+		likeSpan.setAttribute("liked", "");
+	}
+	else {
+		likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
+		likeSpan.removeAttribute("liked");
+	}
+	likeSpan.appendChild(likeIcon);
+	
+	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
+	likeSpan.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
+	
+	// Number of likes
+	const numLikes = document.createElement("p");
+	numLikes.setAttribute("id", `numLikes${jobPost.id}`)
+	numLikes.innerText = `  ${jobPost.likes.length} likes`
+	numLikes.setAttribute("class", "hover-underline");
+	
+	// Like section
+	const likeSection = document.createElement("div");
+	likeSection.setAttribute("id", `likes${jobPost.id}`);
+	generateLikes(likeSection, jobPost.likes);
+	
+	numLikes.addEventListener("click", () => displayLikes(likeSection));
+	
+	likesDiv.appendChild(likeSpan);
+	likesDiv.appendChild(numLikes);
+	
+	const numComments = document.createElement("p");
+	numComments.setAttribute("id", `numComments${jobPost.id}`);
+	numComments.innerText = `${jobPost.comments.length} comments`;
+	
+	likeCommentBar.appendChild(likesDiv);
+	likeCommentBar.appendChild(numComments);
+	jobContainer.appendChild(likeCommentBar);
+	
+	// Comments section (TODO: hide and unhide this in another function to show/unshow)
+	const commentSection = document.createElement("div");
+	commentSection.setAttribute("id", `comments${jobPost.id}`);
+	
+	generateComments(commentSection, jobPost.comments);
+	jobContainer.appendChild(commentSection);
+	
+	// Post comment
+	const postCommentDiv = document.createElement("div");
+	postCommentDiv.setAttribute("class", "post-comment-div");
+	
+	const addComment = document.createElement("input");
+	addComment.setAttribute("placeholder", "Add a comment");
+	addComment.setAttribute("class", "comment-input");
+	
+	const postCommentBtn = document.createElement("button");
+	postCommentBtn.setAttribute("class", "post-comment-button");
+	postCommentBtn.innerText = "Post";
+	postCommentBtn.addEventListener("click", () => {
+		// Cannot post empty comment
+		if (!addComment.value) {
+			return;
+		}
+	
+		const requestBody = {
+			"id": jobPost.id,
+			"comment": addComment.value
+		}
+		fetch(`http://localhost:${BACKEND_PORT}/job/comment`, {
+			method: "POST",
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': token,
+			},
+			body: JSON.stringify(requestBody)
+		})
+			.then(response => response.json())
+			.then(data => {
+				if (data.error) {
+					alert(data.error);
+				} else {
+					addComment.value = "";
+				}
+			});
+	});
+	
+	postCommentDiv.appendChild(addComment);
+	postCommentDiv.appendChild(postCommentBtn);
+	jobContainer.appendChild(postCommentDiv);
+	
+	// Append to main page
+	document.getElementById("main-page").appendChild(jobContainer);
+
+}
+
+///////////////////////////////////////////
+///// 2.7.2 Fragment based URL routing/////
+///////////////////////////////////////////
+
+function handleHashChange() {
+	// get the hash fragment from the URL
+	const hash = window.location.hash;
+	// remove the #
+	const route = hash.slice(1);
+	console.log(route);
+	console.log(route.slice(0,9));
+	if (route === 'feed') {
+		showFeedStart();
+	} else if (route.slice(0,8) === 'profile=') {
+		const userId = route.split("=")[1];
+		loadProfileScreen(userId);
+	} else if (route === 'register') {
+		loadPage("rego-screen");
+	} else if (route === 'login') {
+		loadPage("login-screen");
+	}
+}
+  
+window.addEventListener('hashchange', handleHashChange);
+  
+// call the handleHashChange function once to handle the initial route
+handleHashChange();
+
