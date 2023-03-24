@@ -1,11 +1,33 @@
 /* base styles, feel free to edit */
+
+:root {
+    --color-background: #F9F6EE;
+    --color-content: white;
+    --color-text: black;
+    --box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
+    0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    --watch-email: black;
+    --nav-hover-color: #ddd;
+    --color-comment-input: white;
+}
+
+.dark-mode {
+    --color-background: rgb(24,25,26);
+    --color-content: rgb(36,37,38); 
+    --color-text: rgb(200,200,200);
+    --box-shadow: grey;
+    --watch-email: white;
+    --nav-hover-color: #3d3d3d;
+    --color-comment-input: rgb(145, 145, 145);
+}
+
 body {
     margin: 0;
     padding: 0;
     height: 100%;
     font-family: Georgia;
-    background-color: #F9F6EE;
-    /* margin: 0 5%px; */
+    background-color: var(--color-background);
+    color: var(--color-text);
 }
 
 main {
@@ -25,19 +47,14 @@ main {
     font-size: 2.2em;
 }
 
-#nav-logo-span:hover {
-    background-color: white;
-}
-
 #nav {
-    background-color: white;
+    background-color: var(--color-content);
     z-index: 3;
     position: sticky;
     overflow: hidden;
     top: 0;
     width: 100vw;
-    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 1px -3px gray;
 }
 
 #nav a {
@@ -49,10 +66,11 @@ main {
     font-size: 35px;
     background-color: transparent;
     padding: 14px 16px;
+    color: var(--color-text);
 }
 
 .nav-button:hover {
-    background-color: #ddd;
+    background-color: var(--nav-hover-color);
 }
 
 #nav-home-button {
@@ -77,14 +95,13 @@ main {
 }
 
 .popup-content {
-    background-color: #fefefe;
+    background-color: var(--color-content);
     margin: 15% auto;
     padding: 20px;
     width: 40%;
     text-align: center;
     display: block;
-    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    box-shadow: var(--box-shadow);
     border-radius: 13px;
     padding-bottom: 40px;
 }
@@ -120,9 +137,8 @@ button {
     flex-direction: column;
     width: 90%;
     max-width: 400px;
-    background-color: white;
-    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    background-color: var(--color-content);
+    box-shadow: var(--box-shadow);
     border-radius: 13px;
 }
 
@@ -180,6 +196,7 @@ input {
 #watch-email-button {
     font-size: 20px;
     background-color: transparent;
+    color: var(--watch-email)
 }
 
 #watch-email-input {
@@ -198,10 +215,9 @@ input {
     align-items: start;
     word-break: break-word;
     /* From https://ishadeed.com/article/new-facebook-css/ */
-    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    box-shadow: var(--box-shadow);
     border-radius: 13px;
-    background-color: white;
+    background-color: var(--color-content);
 }
 
 .job-content {
@@ -271,6 +287,8 @@ h5 {
 
 .comment-input {
     width: 80%;
+    border-radius: 20px;
+    padding-left: 12px;
 }
 
 .hover-underline:hover {
@@ -381,9 +399,8 @@ h5 {
     top: 100px;
     width: 300px;
     max-height: 1000px;
-    box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2),
-        0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    background-color: white;
+    box-shadow: var(--box-shadow);
+    background-color: var(--color-content);
     text-align: center;
     padding: 10px 30px;
     border-radius: 20px;

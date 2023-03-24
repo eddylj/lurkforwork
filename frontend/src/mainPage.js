@@ -9,6 +9,7 @@ let startIndex = 0;
 let loading = false;
 let allowNotifs = false;
 let currPostIds = [];
+let disconnected = false;
 
 window.addEventListener("scroll", () => {
 	// const navBar = document.getElementById(nav);
@@ -20,7 +21,7 @@ window.addEventListener("scroll", () => {
 		const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
 		console.log(startIndex);
 
-		if (scrollTop + clientHeight >= scrollHeight && !loading) {
+		if (scrollTop + clientHeight >= scrollHeight && !loading && !disconnected) {
 			loading = true;
 			startIndex += 5;
 			showFeed(startIndex);
@@ -40,7 +41,6 @@ function loadPage(pageId) {
 	Array.from(document.getElementsByClassName("page")).forEach(page => {
 		page.style.display = "none";
 	});
-
 	if (pageId === "main-page") {
 		document.getElementById("nav-home-button").style.color = "rgb(102, 52, 127)";
 	}
@@ -278,20 +278,24 @@ function showFeedStart() {
 	watchEmailInput.style.display = "none";
 	watchEmailInput.value = "";
 
+	console.log(document.getElementById("main-page").style.display === "none");
+
 	// If offline, then show latest feed
-	if (!navigator.onLine) {
-		loadPage("main-page");
-		loadCachedFeed(authID);
+	if (disconnected) {
+		if (document.getElementById("main-page").style.display === "none") {
+			loadCachedFeed(authID);
+		}
 		return;
 	}
 
-	startIndex = 0;
+
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
+		console.log(`removed ${jobPost.title}`);
 	});
 
+	startIndex = 0;
 	showFeed(startIndex);
-
 }
 
 
@@ -344,7 +348,6 @@ function jobPostCreateDate(date) {
 	else {
 		return isoToNormalDate(date);
 	}
-
 }
 
 function generatePost(jobPost) {
@@ -369,10 +372,8 @@ function generatePost(jobPost) {
 	// Job Post Date
 	const jobDateDiv = document.createElement("div");
 	const jobDate = document.createElement("p");
-
 	jobDate.innerText = jobPostCreateDate(jobPost.createdAt);
 	jobDate.style.color = "grey";
-
 	jobDateDiv.appendChild(jobDate);
 
 	jobContainer.appendChild(creatorSpan);
@@ -844,7 +845,6 @@ function setUpdateProfileSubmitButton() {
 		"password": password
 	};
 
-	// TODO: Make email global variable so don't need to put twice
 	fetchGetUserData(authID).then(data => {
 		if (data.error) {
 			alert(data.error);
@@ -1137,10 +1137,13 @@ function liveUpdate() {
 			if (data.error) {
 				alert(data.error);
 			} else {
+				disconnected = false;
 				for (const jobPost of data) {
 					liveUpdateJobPost(jobPost);
 				}
 			}
+		}).catch(() => {
+			disconnected = true;
 		})
 }
 
@@ -1259,6 +1262,7 @@ function checkOnline() {
 }
 
 function loadCachedFeed() {
+	loadPage("main-page");
 	const dataString = localStorage.getItem(authID);
 	let data = JSON.parse(dataString);
 	for (const jobPost of data) {
@@ -1275,16 +1279,19 @@ function generatePostCached(jobPost) {
 	// User name 
 	const creatorSpan = document.createElement("span");
 	creatorSpan.setAttribute("class", "hover-underline");
-	creatorSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+	creatorSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet and refresh", false));
 
 	creatorSpan.innerText = localStorage.getItem(`id: ${jobPost.id}`);
 
 	// Job Post Date
-	const jobDate = document.createElement("div");
-	jobDate.innerText = `Posted: ${jobPost.createdAt}`;
+	const jobDateDiv = document.createElement("div");
+	const jobDate = document.createElement("p");
+	jobDate.innerText = jobPostCreateDate(jobPost.createdAt);
+	jobDate.style.color = "grey";
+	jobDateDiv.appendChild(jobDate);
 
 	jobContainer.appendChild(creatorSpan);
-	jobContainer.appendChild(jobDate);
+	jobContainer.appendChild(jobDateDiv);
 
 	const jobContent = createJobContent(jobPost);
 	jobContainer.appendChild(jobContent);
@@ -1311,7 +1318,7 @@ function generatePostCached(jobPost) {
 	likeSpan.appendChild(likeIcon);
 
 	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
-	likeSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+	likeSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet and refresh", false));
 
 	// Number of likes
 	const numLikes = document.createElement("p");
@@ -1324,7 +1331,7 @@ function generatePostCached(jobPost) {
 	likeSection.setAttribute("id", `likes${jobPost.id}`);
 	generateLikes(likeSection, jobPost.likes);
 
-	numLikes.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+	numLikes.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet and refresh", false));
 
 	likesDiv.appendChild(likeSpan);
 	likesDiv.appendChild(numLikes);
@@ -1337,7 +1344,6 @@ function generatePostCached(jobPost) {
 	likeCommentBar.appendChild(numComments);
 	jobContainer.appendChild(likeCommentBar);
 
-	// Comments section (TODO: hide and unhide this in another function to show/unshow)
 	const commentSection = document.createElement("div");
 	commentSection.setAttribute("id", `comments${jobPost.id}`);
 
@@ -1363,7 +1369,6 @@ function generatePostCached(jobPost) {
 
 	// Append to main page
 	document.getElementById("main-page").appendChild(jobContainer);
-
 }
 
 ///////////////////////////////////////////
@@ -1401,9 +1406,25 @@ handleHashChange();
 ///// Bonus ///////////////////
 ///////////////////////////////////////////
 
+// Logout button
 const logoutButton = document.getElementById("nav-logout");
 logoutButton.addEventListener("click", () => {
 	window.location.reload();
 	token = null;
 	authID = null;
+});
+
+// Dark mode
+// TODO: make button look btr (slide dark -> light)
+const toggleDarkButton = document.getElementById("nav-toggle-dark");
+const userToggleDark = window.matchMedia("(prefers-color-scheme: dark)");
+function toggleDarkMode(mode) {
+	document.documentElement.classList.toggle("dark-mode", mode);
+}
+// TODO: change addlistener
+toggleDarkMode(userToggleDark.matches);
+userToggleDark.addListener((event) => toggleDarkMode(event.matches));
+
+toggleDarkButton.addEventListener("click", () => {
+	document.documentElement.classList.toggle("dark-mode")
 });
