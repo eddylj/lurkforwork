@@ -16,7 +16,7 @@ window.addEventListener("scroll", () => {
 	// const mainPage = document.getElementById("main-page")
 	// mainPage.getBoundingClientRect
 	const mainPage = document.getElementById("main-page");
-	if (mainPage.style.display === "") {
+	if (mainPage.style.display === "" && navigator.onLine) {
 		const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
 		console.log(startIndex);
 
@@ -278,6 +278,13 @@ function showFeedStart() {
 	watchEmailInput.style.display = "none";
 	watchEmailInput.value = "";
 
+	// If offline, then show latest feed
+	if (!navigator.onLine) {
+		loadPage("main-page");
+		loadCachedFeed(authID);
+		return;
+	}
+
 	startIndex = 0;
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
@@ -305,9 +312,12 @@ function showFeed(startIndexNum) {
 			if (data.error) {
 				alert(data.error);
 			} else {
+				// Cache in local storage if most recent feed
+				if (startIndexNum === 0) {
+					localStorage.setItem(authID, JSON.stringify(data));
+				}
 				for (const jobPost of data) {
 					if (!currPostIds.includes(jobPost.id)) currPostIds.push(jobPost.id);
-					console.log(currPostIds);
 					generatePost(jobPost);
 				}
 			}
@@ -352,6 +362,7 @@ function generatePost(jobPost) {
 			alert(data.error);
 		} else {
 			creatorSpan.innerText = data.name;
+			localStorage.setItem(`id: ${jobPost.id}`, data.name);
 		}
 	})
 
@@ -1156,7 +1167,7 @@ function liveUpdateJobPost(jobPostData) {
 	// Update Likes
 	const likeSection = document.getElementById(`likes${jobPostData.id}`);
 	if (likeSection === null) return;
-	console.log(likeSection);
+	// console.log(likeSection);
 	likeSection.textContent = "";
 	generateLikes(likeSection, jobPostData.likes);
 }
@@ -1231,6 +1242,160 @@ function newNotifPopup(jobPost) {
 		}
 	});
 }
+
+///////////////////////////////////////////
+///// 2.7.1 Static feed offline access/////
+///////////////////////////////////////////
+
+// Function to check if online or offline
+document.addEventListener("DOMContentLoaded", function () {
+	checkOnline();
+	window.addEventListener('online', checkOnline);
+	window.addEventListener('offline', checkOnline);
+});
+
+function checkOnline() {
+	console.log(`Your network status is ${navigator.onLine ? "Online" : "Offline"} `);
+}
+
+function loadCachedFeed() {
+	const dataString = localStorage.getItem(authID);
+	let data = JSON.parse(dataString);
+	for (const jobPost of data) {
+		generatePostCached(jobPost);
+	}
+}
+
+
+function generatePostCached(jobPost) {
+	// Create Container for job post
+	const jobContainer = document.createElement("div");
+	jobContainer.setAttribute("class", "job-post");
+	jobContainer.setAttribute("id", `jobPost${jobPost.id}`);
+	// User name 
+	const creatorSpan = document.createElement("span");
+	creatorSpan.setAttribute("class", "hover-underline");
+	creatorSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+
+	creatorSpan.innerText = localStorage.getItem(`id: ${jobPost.id}`);
+
+	// Job Post Date
+	const jobDate = document.createElement("div");
+	jobDate.innerText = `Posted: ${jobPost.createdAt}`;
+
+	jobContainer.appendChild(creatorSpan);
+	jobContainer.appendChild(jobDate);
+
+	const jobContent = createJobContent(jobPost);
+	jobContainer.appendChild(jobContent);
+
+	// Likes and comments bar
+	const likeCommentBar = document.createElement("div");
+	likeCommentBar.setAttribute("class", "likes-comments-bar");
+
+	const likesDiv = document.createElement("div");
+	likesDiv.setAttribute("class", "likes");
+
+	const likeSpan = document.createElement("span");
+	// Check if post has been liked by current user
+	const isLiked = jobPost.likes.some((user) => user.userId === authID);
+	const likeIcon = document.createElement("i");
+	if (isLiked) {
+		likeIcon.setAttribute("class", "fa-solid fa-thumbs-up");
+		likeSpan.setAttribute("liked", "");
+	}
+	else {
+		likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
+		likeSpan.removeAttribute("liked");
+	}
+	likeSpan.appendChild(likeIcon);
+
+	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
+	likeSpan.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+
+	// Number of likes
+	const numLikes = document.createElement("p");
+	numLikes.setAttribute("id", `numLikes${jobPost.id}`)
+	numLikes.innerText = `  ${jobPost.likes.length} likes`
+	numLikes.setAttribute("class", "hover-underline");
+
+	// Like section
+	const likeSection = document.createElement("div");
+	likeSection.setAttribute("id", `likes${jobPost.id}`);
+	generateLikes(likeSection, jobPost.likes);
+
+	numLikes.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+
+	likesDiv.appendChild(likeSpan);
+	likesDiv.appendChild(numLikes);
+
+	const numComments = document.createElement("p");
+	numComments.setAttribute("id", `numComments${jobPost.id}`);
+	numComments.innerText = `${jobPost.comments.length} comments`;
+
+	likeCommentBar.appendChild(likesDiv);
+	likeCommentBar.appendChild(numComments);
+	jobContainer.appendChild(likeCommentBar);
+
+	// Comments section (TODO: hide and unhide this in another function to show/unshow)
+	const commentSection = document.createElement("div");
+	commentSection.setAttribute("id", `comments${jobPost.id}`);
+
+	generateComments(commentSection, jobPost.comments);
+	jobContainer.appendChild(commentSection);
+
+	// Post comment
+	const postCommentDiv = document.createElement("div");
+	postCommentDiv.setAttribute("class", "post-comment-div");
+
+	const addComment = document.createElement("input");
+	addComment.setAttribute("placeholder", "Add a comment");
+	addComment.setAttribute("class", "comment-input");
+
+	const postCommentBtn = document.createElement("button");
+	postCommentBtn.setAttribute("class", "post-comment-button");
+	postCommentBtn.innerText = "Post";
+	postCommentBtn.addEventListener("click", () => errorOrSuccessPopup("You are offline, please connect to Internet", false));
+
+	postCommentDiv.appendChild(addComment);
+	postCommentDiv.appendChild(postCommentBtn);
+	jobContainer.appendChild(postCommentDiv);
+
+	// Append to main page
+	document.getElementById("main-page").appendChild(jobContainer);
+
+}
+
+///////////////////////////////////////////
+///// 2.7.2 Fragment based URL routing/////
+///////////////////////////////////////////
+
+function handleHashChange() {
+	// get the hash fragment from the URL
+	const hash = window.location.hash;
+	// remove the #
+	const route = hash.slice(1);
+	console.log(route);
+	console.log(route.slice(0, 9));
+	if (route === 'feed') {
+		showFeedStart();
+	} else if (route.slice(0, 8) === 'profile=') {
+		const userId = route.split("=")[1];
+		loadProfileScreen(userId);
+	} else if (route === 'register') {
+		loadPage("rego-screen");
+	} else if (route === 'login' || route === '') {
+		loadPage("login-screen");
+	}
+	// else {
+	// 	loadPage("error-page");
+	// }
+}
+
+window.addEventListener('hashchange', handleHashChange);
+
+// call the handleHashChange function once to handle the initial route
+handleHashChange();
 
 ///////////////////////////////////////////
 ///// Bonus ///////////////////
