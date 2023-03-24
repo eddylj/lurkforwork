@@ -11,6 +11,8 @@ let allowNotifs = false;
 let currPostIds = [];
 
 window.addEventListener("scroll", () => {
+	// const navBar = document.getElementById(nav);
+	// if (window.pageYOffset)
 	// const mainPage = document.getElementById("main-page")
 	// mainPage.getBoundingClientRect
 	const mainPage = document.getElementById("main-page");
@@ -30,7 +32,7 @@ window.addEventListener("scroll", () => {
 	}
 });
 
-// Opens the page in login screen
+// Opens initial page in login screen
 loadPage("login-screen");
 
 // Input the page id from html and hide all other pages
@@ -38,11 +40,39 @@ function loadPage(pageId) {
 	Array.from(document.getElementsByClassName("page")).forEach(page => {
 		page.style.display = "none";
 	});
+
+	if (pageId === "main-page") {
+		document.getElementById("nav-home-button").style.color = "rgb(102, 52, 127)";
+	}
+	else {
+		document.getElementById("nav-home-button").style.color = "black";
+	}
+	if (pageId === "profile-page") {
+		document.getElementById("nav-profile-button").style.color = "rgb(102, 52, 127)";
+	}
+	else {
+		document.getElementById("nav-profile-button").style.color = "black";
+	}
+
+	const navBar = document.getElementById("nav");
+	const logoSpan = document.getElementById("login-logo-span");
+	if (pageId === "login-screen" || pageId === "rego-screen") {
+		navBar.style.display = "none";
+		logoSpan.style.display = "block";
+	}
+	else {
+		navBar.style.display = "";
+		logoSpan.style.display = "none";
+	}
 	document.getElementById(pageId).style.display = "";
 }
 
-document.getElementById("nav-main-feed-button").addEventListener("click", () => {
-	showFeedStart(0);
+document.getElementById("nav-logo-span").addEventListener("click", () => {
+	showFeedStart();
+});
+
+document.getElementById("nav-home-button").addEventListener("click", () => {
+	showFeedStart();
 });
 
 document.getElementById("nav-profile-button").addEventListener("click", () => {
@@ -76,10 +106,6 @@ function fetchGetUserData(user) {
 
 const loginForm = document.forms.login_form;
 
-document.getElementById("nav-login").addEventListener("click", () => {
-	loadPage("login-screen");
-});
-
 document.getElementById("btn-join").addEventListener("click", (event) => {
 	event.preventDefault();
 	loadPage("rego-screen");
@@ -111,7 +137,7 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 				token = data.token;
 				authID = data.userId;
 				// Load main page after login
-				showFeed(0);
+				showFeedStart();
 			}
 		});
 });
@@ -123,10 +149,6 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 // Variables
 const regoForm = document.forms.rego_form;
 
-// Toggle nav bar rego screen
-document.getElementById("nav-register").addEventListener("click", () => {
-	loadPage("rego-screen");
-});
 // Back to login
 document.getElementById("btn-signin").addEventListener("click", (event) => {
 	event.preventDefault();
@@ -158,15 +180,15 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 	let regoConfirmPw = regoForm.rego_confirm_pw.value;
 
 	if (!isValidEmailAndName(regoEmail, regoName)) {
-		popup("Please enter a valid email and name. Names must contain only letters and spaces.", false);
+		errorOrSuccessPopup("Please enter a valid email and name. Names must contain only letters and spaces.", false);
 		return;
 	}
 	if (regoPw === "") {
-		popup("Please enter a password.", false)
+		errorOrSuccessPopup("Please enter a password", false)
 		return;
 	}
 	if (regoPw !== regoConfirmPw) {
-		popup("Please ensure passwords match", false)
+		errorOrSuccessPopup("Please ensure passwords match", false)
 		return;
 	}
 
@@ -181,9 +203,9 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
-				alert(data.error);
+				errorOrSuccessPopup("Email address already taken", false);
 			} else {
-				popup('Registration successful', true);
+				errorOrSuccessPopup('Registration successful', true);
 				// Load login after successful registration
 				loadPage("login-screen");
 			}
@@ -226,26 +248,19 @@ function makePopupHeader(headerText, headerIconClass) {
 
 function errorOrSuccessPopup(message, success) {
 	const popupContent = showPopup();
-	let headerText = "";
-	let headerIconClass = "";
-
 	const popupHeader = document.createElement("h3");
+	const popupHeaderIcon = document.createElement("i");
 
 	if (success) {
-		headerText = "SUCCESS!";
-		headerIconClass = "fa-solid fa-check";
+		popupHeader.innerText = "SUCCESS!";
+		popupHeaderIcon.setAttribute("class", "fa-solid fa-check");
 		popupHeader.style.color = "green";
-
 	}
 	else {
-		headerText = "ERROR!";
-		headerIconClass = "fa-solid fa-triangle-exclamation";
+		popupHeader.innerText = "ERROR!";
+		popupHeaderIcon.setAttribute("class", "fa-solid fa-triangle-exclamation");
 		popupHeader.style.color = "rgb(155, 10, 10)";
 	}
-	popupHeader.innerText = headerText;
-	const popupHeaderIcon = document.createElement("i");
-	popupHeaderIcon.setAttribute("class", headerIconClass);
-
 	popupContent.appendChild(popupHeader);
 	popupContent.appendChild(popupHeaderIcon);
 	const popupMessage = document.createElement("span");
@@ -259,11 +274,17 @@ function errorOrSuccessPopup(message, success) {
 ////////////////////////////// TODO: MAKE SURE TO SHOW IN REVERSE CHRONOLOGICAL
 
 function showFeedStart() {
+	// Whenever feed is accessed, reset watchEmail input
+	watchEmailInput.style.display = "none";
+	watchEmailInput.value = "";
+
 	startIndex = 0;
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
 	});
-	showFeed(startIndex)
+
+	showFeed(startIndex);
+
 }
 
 
@@ -293,6 +314,29 @@ function showFeed(startIndexNum) {
 		})
 }
 
+
+function isoToNormalDate(date) {
+	return `${date.substring(8, 10)}/${date.substring(5, 7)}/${date.substring(0, 4)}`;
+}
+//  DD/MM/YYYY
+// how many hours and minutes ago
+function jobPostCreateDate(date) {
+	const isoDate = new Date(date);
+	const nowDate = new Date();
+	const timeSince = nowDate.getTime() - isoDate.getTime();
+	const hoursSince = Math.floor(timeSince / (1000 * 60 * 60));
+
+
+	if (hoursSince < 24) {
+		const minutesSince = Math.floor(timeSince / (1000 * 60) % 60);
+		return hoursSince === 0 ? `${minutesSince} min ago` : `${hoursSince} hrs ${minutesSince} min ago`;
+	}
+	else {
+		return isoToNormalDate(date);
+	}
+
+}
+
 function generatePost(jobPost) {
 	// Create Container for job post
 	const jobContainer = document.createElement("div");
@@ -312,11 +356,16 @@ function generatePost(jobPost) {
 	})
 
 	// Job Post Date
-	const jobDate = document.createElement("div");
-	jobDate.innerText = `Posted: ${jobPost.createdAt}`;
+	const jobDateDiv = document.createElement("div");
+	const jobDate = document.createElement("p");
+
+	jobDate.innerText = jobPostCreateDate(jobPost.createdAt);
+	jobDate.style.color = "grey";
+
+	jobDateDiv.appendChild(jobDate);
 
 	jobContainer.appendChild(creatorSpan);
-	jobContainer.appendChild(jobDate);
+	jobContainer.appendChild(jobDateDiv);
 
 	const jobContent = createJobContent(jobPost);
 	jobContainer.appendChild(jobContent);
@@ -360,6 +409,7 @@ function generatePost(jobPost) {
 
 	likesDiv.appendChild(likeSpan);
 	likesDiv.appendChild(numLikes);
+	likesDiv.style.marginTop = "8px";
 
 	const numComments = document.createElement("p");
 	numComments.setAttribute("id", `numComments${jobPost.id}`);
@@ -369,7 +419,6 @@ function generatePost(jobPost) {
 	likeCommentBar.appendChild(numComments);
 	jobContainer.appendChild(likeCommentBar);
 
-	// Comments section (TODO: hide and unhide this in another function to show/unshow)
 	const commentSection = document.createElement("div");
 	commentSection.setAttribute("id", `comments${jobPost.id}`);
 
@@ -435,14 +484,14 @@ function createJobContent(jobPost) {
 	const jobDescription = document.createElement("div");
 	jobDescription.setAttribute("class", "job-description");
 	const descriptionTitle = document.createElement("h5");
-	descriptionTitle.innerText = `${jobPost.title}${jobPost.id}`;
+	descriptionTitle.innerText = `${jobPost.title}`;
 	jobDescription.appendChild(descriptionTitle);
 
 	const brNode = document.createElement("br");
 	jobDescription.appendChild(brNode);
 
 	const jobStartDate = document.createElement("div");
-	jobStartDate.innerText = jobPost.start; // TODO: WIll need to change this for date function
+	jobStartDate.innerText = `Starting ${isoToNormalDate(jobPost.start)}`;;
 	jobDescription.appendChild(jobStartDate);
 
 	const brNode2 = document.createElement("br");
@@ -640,13 +689,13 @@ function generateProfile(userData, isOwnProfile) {
 			editJobButtons.setAttribute("class", "edit-job-buttons");
 
 			const jobUpdateBtn = document.createElement("button");
-			jobUpdateBtn.setAttribute("class", "job-update");
+			jobUpdateBtn.setAttribute("class", "small-media-button");
 			jobUpdateBtn.innerText = "Update";
 			// Add Event listener to update
 			jobUpdateBtn.addEventListener("click", () => updateJob(jobPost));
 
 			const jobDeleteBtn = document.createElement("button");
-			jobDeleteBtn.setAttribute("class", "job-delete");
+			jobDeleteBtn.setAttribute("class", "small-media-button");
 			jobDeleteBtn.innerText = "Delete";
 			// Add Event listener to delete job
 			jobDeleteBtn.addEventListener("click", () => deleteJob(jobPost.id));
@@ -720,13 +769,14 @@ updateProfileBtn.addEventListener("click", () => {
 	inputDiv.appendChild(createInputDom("update-profile-email", "Email"));
 	inputDiv.appendChild(createInputDom("update-profile-password", "Password", "password"));
 	inputDiv.appendChild(createInputDom("update-profile-confirm-password", "Confirm password", "password"));
-	popupContent.appendChild(inputDiv);
 
 	let updateProfileSubmitButton = document.createElement("button");
 	updateProfileSubmitButton.innerText = "Submit";
 	updateProfileSubmitButton.setAttribute("class", "btn-submit");
-	popupContent.appendChild(updateProfileSubmitButton);
+	inputDiv.appendChild(updateProfileSubmitButton);
 	updateProfileSubmitButton.addEventListener("click", setUpdateProfileSubmitButton);
+
+	popupContent.appendChild(inputDiv);
 
 	// Fill out the popup info
 	fetchGetUserData(authID).then(data => {
@@ -810,14 +860,8 @@ function setUpdateProfileSubmitButton() {
 ////////////////////////////////////////
 
 // Watch Button
-function watchUser(email, buttonId) {
-	const watchButton = document.getElementById(buttonId);
-	const isWatched = watchButton.hasAttribute("watching");
-	const requestBody = {
-		"email": email,
-		"turnon": !isWatched
-	}
-	fetch(`http://localhost:${BACKEND_PORT}/user/watch`, {
+function watchUserFetchPut(requestBody) {
+	return fetch(`http://localhost:${BACKEND_PORT}/user/watch`, {
 		method: "PUT",
 		headers: {
 			'Content-Type': 'application/json',
@@ -825,22 +869,59 @@ function watchUser(email, buttonId) {
 		},
 		body: JSON.stringify(requestBody)
 	})
-		.then(response => response.json())
-		.then(data => {
-			if (data.error) {
-				alert(data.error);
-			} else {
-				if (isWatched) {
-					watchButton.removeAttribute("watching");
-					watchButton.innerText = "➕ Watch";
-				}
-				else {
-					watchButton.setAttribute("watching", "");
-					watchButton.innerText = "✔️ Watching";
-				}
-			}
-		})
+		.then(response => response.json());
 }
+
+
+function watchUser(email, buttonId) {
+	const watchButton = document.getElementById(buttonId);
+	const isWatched = watchButton.hasAttribute("watching");
+	const requestBody = {
+		"email": email,
+		"turnon": !isWatched
+	}
+
+	watchUserFetchPut(requestBody).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			if (isWatched) {
+				watchButton.removeAttribute("watching");
+				watchButton.innerText = "➕ Watch";
+			}
+			else {
+				watchButton.setAttribute("watching", "");
+				watchButton.innerText = "✔️ Watching";
+			}
+		}
+	})
+}
+
+const watchEmailButton = document.getElementById("watch-email-button");
+const watchEmailInput = document.getElementById("watch-email-input");
+
+watchEmailButton.addEventListener("click", () => {
+	watchEmailInput.style.display === "inline" ? watchEmailInput.style.display = "none" :
+		watchEmailInput.style.display = "inline";
+});
+
+watchEmailInput.addEventListener("keydown", (e) => {
+	if (e.key === "Enter") {
+		const requestBody = {
+			"email": watchEmailInput.value,
+			"turnon": true
+		}
+		watchUserFetchPut(requestBody).then(data => {
+			if (data.error) {
+				errorOrSuccessPopup("That email does not belong to an account", false);
+			}
+			else {
+				errorOrSuccessPopup(`Now watching ${watchEmailInput.value}`, true);
+				watchEmailInput.value = "";
+			}
+		});
+	}
+});
 
 ////////////////////////////////////////
 ///// 2.5.1 Adding a job  //////////////
@@ -854,32 +935,36 @@ createJobBtn.addEventListener("click", () => {
 	const inputDiv = document.createElement("div");
 	inputDiv.setAttribute("class", "popup-input-content");
 
+	const startDateInput = createInputDom("create-job-date-input", "Start date");
+	startDateInput.addEventListener("focus", () => {
+		startDateInput.type = "date";
+	});
 	inputDiv.appendChild(createInputDom("create-job-title-input", "Job title"));
 	inputDiv.appendChild(createInputDom("create-job-img-input", undefined, "file", "image/*"));
-	inputDiv.appendChild(createInputDom("create-job-date-input", "Start date"));
+	inputDiv.appendChild(startDateInput);
 	inputDiv.appendChild(createInputDom("create-job-description-input", "Job description"));
-	popupContent.appendChild(inputDiv);
+
 
 	let createJobSubmitButton = document.createElement("button");
 	createJobSubmitButton.innerText = "Submit";
 	createJobSubmitButton.setAttribute("class", "btn-submit");
-	popupContent.appendChild(createJobSubmitButton);
+	inputDiv.appendChild(createJobSubmitButton);
 	const errorSpan = document.createElement("span");
 	errorSpan.setAttribute("id", "create-job-error");
-	popupContent.appendChild(errorSpan);
+	inputDiv.appendChild(errorSpan);
+	popupContent.appendChild(inputDiv);
 
 	createJobSubmitButton.addEventListener("click", () => {
 		const jobTitle = document.getElementById("create-job-title-input").value;
 		const jobImgFile = document.querySelector('#create-job-img-input').files[0];
-		const jobDate = document.getElementById("create-job-date-input").value;
 		const jobDescription = document.getElementById("create-job-description-input").value;
 
 
 		// Check everything is non-empty
-		if (!jobTitle || !jobDate || !jobImgFile) {
+		if (!jobTitle || !startDateInput.value || !jobImgFile) {
 			let errorText = "";
 			if (!jobTitle) errorText = "Please enter a job title";
-			else if (!jobDate) errorText = "Please enter a start date";
+			else if (!startDateInput.value) errorText = "Please enter a start date";
 			else errorText = "Please upload an image";
 			errorSpan.innerText = errorText;
 			return;
@@ -888,7 +973,7 @@ createJobBtn.addEventListener("click", () => {
 			const requestBody = {
 				"title": jobTitle,
 				"image": img,
-				"start": jobDate,
+				"start": new Date(startDateInput.value).toISOString().substring(0, 10),
 				"description": jobDescription
 			}
 
@@ -929,35 +1014,37 @@ function updateJob(jobData) {
 	const inputDiv = document.createElement("div");
 	inputDiv.setAttribute("class", "popup-input-content");
 
-	inputDiv.appendChild(createInputDom("update-job-title-input", "Job title"));
-	inputDiv.appendChild(createInputDom("update-job-img-input", undefined, "file", "image/*"));
-	inputDiv.appendChild(createInputDom("update-job-date-input", "Start date"));
-	inputDiv.appendChild(createInputDom("update-job-description-input", "Job description"));
-	popupContent.appendChild(inputDiv);
+	const titleInput = createInputDom("update-job-title-input", "Job title");
+	const imgInput = createInputDom("update-job-img-input", undefined, "file", "image/*");
+	const startDateInput = createInputDom("update-job-date-input", "", "date");
+	const descriptInput = createInputDom("update-job-description-input", "Job description");
+	titleInput.value = jobData.title;
+	// const prevDateValue = ;
+	startDateInput.value = new Date(jobData.start).toISOString().substring(0, 10);
+	descriptInput.value = jobData.description;
 
-	document.getElementById("update-job-title-input").value = jobData.title;
-	document.getElementById("update-job-date-input").value = jobData.start;
-	document.getElementById("update-job-description-input").value = jobData.description;
+	inputDiv.appendChild(titleInput);
+	inputDiv.appendChild(imgInput);
+	inputDiv.appendChild(startDateInput);
+	inputDiv.appendChild(descriptInput);
 
 	let updateJobSubmitButton = document.createElement("button");
 	updateJobSubmitButton.innerText = "Submit";
 	updateJobSubmitButton.setAttribute("class", "btn-submit");
-	popupContent.appendChild(updateJobSubmitButton);
-	updateJobSubmitButton.addEventListener("click", () => {
-		const jobTitle = document.getElementById("update-job-title-input").value;
-		const jobImgFile = document.querySelector("#update-job-img-input").files[0];
-		const jobDate = document.getElementById("update-job-date-input").value;
-		const jobDescription = document.getElementById("update-job-description-input").value;
+	inputDiv.appendChild(updateJobSubmitButton);
 
+	popupContent.appendChild(inputDiv);
+
+	updateJobSubmitButton.addEventListener("click", () => {
 		let requestBody = {
 			"id": jobData.id,
-			"title": jobTitle,
-			"start": jobDate,
-			"description": jobDescription
+			"title": titleInput.value,
+			"start": startDateInput.value,
+			"description": descriptInput.value
 		};
 
-		if (jobImgFile) {
-			fileToDataUrl(jobImgFile).then((img) => {
+		if (imgInput.files[0]) {
+			fileToDataUrl(imgInput.files[0]).then((img) => {
 				Object.assign(requestBody, { "image": img });
 				fetchPutJobData(requestBody);
 			});
@@ -982,7 +1069,7 @@ function fetchPutJobData(requestBody) {
 			if (data.error) {
 				alert(data.error);
 			} else {
-				document.getElementById("generic-popup").style.display = "None";
+				// document.getElementById("generic-popup").style.display = "None";
 				const popupContent = showPopup();
 				let popupHeader = makePopupHeader("Job update successful ", "fa-solid fa-check");
 				popupHeader.style.color = "green";
@@ -1006,7 +1093,11 @@ function deleteJob(jobId) {
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
+				errorOrSuccessPopup("Job already deleted", false);
 				alert(data.error);
+			}
+			else {
+				errorOrSuccessPopup("Successfully deleted job", true);
 			}
 		})
 }
@@ -1015,7 +1106,7 @@ function deleteJob(jobId) {
 ///// 2.6.2 Live Update ///////////////////
 ///////////////////////////////////////////
 
-setInterval(liveUpdate, 1000);
+setInterval(liveUpdate, 500);
 
 function liveUpdate() {
 	// Check the user is logged in
@@ -1030,28 +1121,28 @@ function liveUpdate() {
 			'Authorization': token
 		}
 	})
-	.then(response => response.json())
-	.then(data => {
-		if (data.error) {
-			alert(data.error);
-		} else {
-			for (const jobPost of data) {
-				liveUpdateJobPost(jobPost);
+		.then(response => response.json())
+		.then(data => {
+			if (data.error) {
+				alert(data.error);
+			} else {
+				for (const jobPost of data) {
+					liveUpdateJobPost(jobPost);
+				}
 			}
-		}
-	})
+		})
 }
 
 function liveUpdateJobPost(jobPostData) {
 	// Check job Post exsits - if doesn't - send push notif
 	if (document.getElementById(`jobPost${jobPostData.id}`) === null) {
-		pushNotifs(jobPostData);
+		pushNotifs();
 		return;
 	}
 
 	// Update number of likes
 	let numLikes = document.getElementById(`numLikes${jobPostData.id}`);
-	numLikes.innerText = `${jobPostData.likes.length} likes`;
+	numLikes.innerText = ` ${jobPostData.likes.length} likes`;
 
 	// Update number of comments
 	let numComments = document.getElementById(`numComments${jobPostData.id}`);
@@ -1059,14 +1150,14 @@ function liveUpdateJobPost(jobPostData) {
 
 	// Update comments
 	const commentSection = document.getElementById(`comments${jobPostData.id}`);
-	commentSection.innerHTML = "";
+	commentSection.textContent = "";
 	generateComments(commentSection, jobPostData.comments);
 
 	// Update Likes
 	const likeSection = document.getElementById(`likes${jobPostData.id}`);
 	if (likeSection === null) return;
 	console.log(likeSection);
-	likeSection.innerHTML = "";
+	likeSection.textContent = "";
 	generateLikes(likeSection, jobPostData.likes);
 }
 
@@ -1106,25 +1197,48 @@ function pushNotifs() {
 					if (!currPostIds.includes(jobPost.id)) {
 						currPostIds.push(jobPost.id);
 						// If you want to customise, chuck in data as argument
-						newNotifPopup();
+
+						newNotifPopup(jobPost);
 					}
 				}
 			}
 		})
-	
 }
 
 document.getElementById("notif-close-span").addEventListener("click", () => {
 	document.getElementById("notif-popup").style.display = "none";
-})
+});
 
 document.getElementById("refresh-main-page").addEventListener("click", () => {
 	document.getElementById("notif-popup").style.display = "none";
 	showFeedStart();
-})
+});
 
 
-function newNotifPopup() {
+function newNotifPopup(jobPost) {
 	const notifPopup = document.getElementById("notif-popup");
-	notifPopup.style.display = "flex";
+	notifPopup.style.display = "block";
+	const notifPopupContent = document.getElementById("notif-popup-content");
+	let notifTextDiv = document.createElement("div");
+	notifTextDiv.setAttribute("class", "notif-text-div")
+
+	fetchGetUserData(jobPost.creatorId).then(data => {
+		if (data.error) {
+			alert(data.error);
+		} else {
+			notifTextDiv.innerText = `${data.name} has posted a job: ${jobPost.title} starting ${isoToNormalDate(jobPost.start)}`;
+			notifPopupContent.appendChild(notifTextDiv);
+		}
+	});
 }
+
+///////////////////////////////////////////
+///// Bonus ///////////////////
+///////////////////////////////////////////
+
+const logoutButton = document.getElementById("nav-logout");
+logoutButton.addEventListener("click", () => {
+	window.location.reload();
+	token = null;
+	authID = null;
+});
