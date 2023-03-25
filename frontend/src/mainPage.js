@@ -10,24 +10,16 @@ let loading = false;
 let allowNotifs = false;
 let currPostIds = [];
 let disconnected = false;
+let colorMode = true;
 
 window.addEventListener("scroll", () => {
-	// const navBar = document.getElementById(nav);
-	// if (window.pageYOffset)
-	// const mainPage = document.getElementById("main-page")
-	// mainPage.getBoundingClientRect
 	const mainPage = document.getElementById("main-page");
 	if (mainPage.style.display === "" && navigator.onLine) {
 		const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-		console.log(startIndex);
-
 		if (scrollTop + clientHeight >= scrollHeight && !loading && !disconnected) {
 			loading = true;
 			startIndex += 5;
 			showFeed(startIndex);
-			console.log(startIndex);
-			// loadMoreContent();
-			// console.log("meowmeow");
 			loading = false;
 		}
 	}
@@ -278,8 +270,6 @@ function showFeedStart() {
 	watchEmailInput.style.display = "none";
 	watchEmailInput.value = "";
 
-	console.log(document.getElementById("main-page").style.display === "none");
-
 	// If offline, then show latest feed
 	if (disconnected) {
 		if (document.getElementById("main-page").style.display === "none") {
@@ -291,7 +281,6 @@ function showFeedStart() {
 
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
-		console.log(`removed ${jobPost.title}`);
 	});
 
 	startIndex = 0;
@@ -442,7 +431,7 @@ function generatePost(jobPost) {
 	postCommentDiv.setAttribute("class", "post-comment-div");
 
 	const addComment = document.createElement("input");
-	addComment.setAttribute("placeholder", "Add a comment");
+	addComment.setAttribute("placeholder", "Add a comment...");
 	addComment.setAttribute("class", "comment-input");
 
 	const postCommentBtn = document.createElement("button");
@@ -777,7 +766,7 @@ updateProfileBtn.addEventListener("click", () => {
 	inputDiv.setAttribute("class", "popup-input-content");
 
 	inputDiv.appendChild(createInputDom("update-profile-name", "Name"));
-	inputDiv.appendChild(createInputDom("update-profile-picture", undefined, "file", "image/*"));
+	inputDiv.appendChild(createInputDom("update-profile-picture", undefined, "file", "image/png, image/jpg"));
 	inputDiv.appendChild(createInputDom("update-profile-email", "Email"));
 	inputDiv.appendChild(createInputDom("update-profile-password", "Password", "password"));
 	inputDiv.appendChild(createInputDom("update-profile-confirm-password", "Confirm password", "password"));
@@ -951,7 +940,7 @@ createJobBtn.addEventListener("click", () => {
 		startDateInput.type = "date";
 	});
 	inputDiv.appendChild(createInputDom("create-job-title-input", "Job title"));
-	inputDiv.appendChild(createInputDom("create-job-img-input", undefined, "file", "image/*"));
+	inputDiv.appendChild(createInputDom("create-job-img-input", undefined, "file", "image/jpg"));
 	inputDiv.appendChild(startDateInput);
 	inputDiv.appendChild(createInputDom("create-job-description-input", "Job description"));
 
@@ -1026,7 +1015,7 @@ function updateJob(jobData) {
 	inputDiv.setAttribute("class", "popup-input-content");
 
 	const titleInput = createInputDom("update-job-title-input", "Job title");
-	const imgInput = createInputDom("update-job-img-input", undefined, "file", "image/*");
+	const imgInput = createInputDom("update-job-img-input", undefined, "file", "image/jpg");
 	const startDateInput = createInputDom("update-job-date-input", "", "date");
 	const descriptInput = createInputDom("update-job-description-input", "Job description");
 	titleInput.value = jobData.title;
@@ -1170,7 +1159,6 @@ function liveUpdateJobPost(jobPostData) {
 	// Update Likes
 	const likeSection = document.getElementById(`likes${jobPostData.id}`);
 	if (likeSection === null) return;
-	// console.log(likeSection);
 	likeSection.textContent = "";
 	generateLikes(likeSection, jobPostData.likes);
 }
@@ -1249,18 +1237,6 @@ function newNotifPopup(jobPost) {
 ///////////////////////////////////////////
 ///// 2.7.1 Static feed offline access/////
 ///////////////////////////////////////////
-
-// Function to check if online or offline
-document.addEventListener("DOMContentLoaded", function () {
-	checkOnline();
-	window.addEventListener('online', checkOnline);
-	window.addEventListener('offline', checkOnline);
-});
-
-function checkOnline() {
-	console.log(`Your network status is ${navigator.onLine ? "Online" : "Offline"} `);
-}
-
 function loadCachedFeed() {
 	loadPage("main-page");
 	const dataString = localStorage.getItem(authID);
@@ -1380,8 +1356,6 @@ function handleHashChange() {
 	const hash = window.location.hash;
 	// remove the #
 	const route = hash.slice(1);
-	console.log(route);
-	console.log(route.slice(0, 9));
 	if (route === 'feed') {
 		showFeedStart();
 	} else if (route.slice(0, 8) === 'profile=') {
@@ -1409,22 +1383,29 @@ handleHashChange();
 // Logout button
 const logoutButton = document.getElementById("nav-logout");
 logoutButton.addEventListener("click", () => {
-	window.location.reload();
-	token = null;
-	authID = null;
+	if (!disconnected) {
+		loginForm.login_email.value = "";
+		loginForm.login_pw.value = "";
+		token = null;
+		authID = null;
+		document.getElementById("generic-popup").style.display = "none";
+		loadPage("login-screen");
+	}
 });
 
 // Dark mode
-// TODO: make button look btr (slide dark -> light)
 const toggleDarkButton = document.getElementById("nav-toggle-dark");
-const userToggleDark = window.matchMedia("(prefers-color-scheme: dark)");
-function toggleDarkMode(mode) {
-	document.documentElement.classList.toggle("dark-mode", mode);
-}
-// TODO: change addlistener
-toggleDarkMode(userToggleDark.matches);
-userToggleDark.addListener((event) => toggleDarkMode(event.matches));
 
 toggleDarkButton.addEventListener("click", () => {
 	document.documentElement.classList.toggle("dark-mode")
+	if (colorMode === true) {
+		document.getElementById("dark-mode-sun").style.display = "inline-block";
+		document.getElementById("dark-mode-moon").style.display = "none";
+		colorMode = false;
+	}
+	else {
+		document.getElementById("dark-mode-sun").style.display = "none";
+		document.getElementById("dark-mode-moon").style.display = "inline-block";
+		colorMode = true;
+	}
 });
