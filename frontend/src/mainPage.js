@@ -1,6 +1,6 @@
 import { BACKEND_PORT } from './config.js';
 // A helper you may want to use when uploading new images to the server.
-import { fileToDataUrl } from './helpers.js';
+import { fileToDataUrl, loadPage, initPost } from './helpers.js';
 
 // Global Variables
 let token = null;
@@ -25,62 +25,6 @@ window.addEventListener("scroll", () => {
 	}
 });
 
-// Opens initial page in login screen
-loadPage("login-screen");
-
-// Input the page id from html and hide all other pages
-function loadPage(pageId) {
-	Array.from(document.getElementsByClassName("page")).forEach(page => {
-		page.style.display = "none";
-	});
-	if (pageId === "main-page") {
-		document.getElementById("nav-home-button").style.color = "rgb(102, 52, 127)";
-	}
-	else {
-		document.getElementById("nav-home-button").style.color = "var(--color-text)";
-	}
-	if (pageId === "profile-page") {
-		document.getElementById("nav-profile-button").style.color = "rgb(102, 52, 127)";
-	}
-	else {
-		document.getElementById("nav-profile-button").style.color = "var(--color-text)";
-	}
-
-	const navBar = document.getElementById("nav");
-	const logoSpan = document.getElementById("login-logo-span");
-	if (pageId === "login-screen" || pageId === "rego-screen") {
-		navBar.style.display = "none";
-		logoSpan.style.display = "block";
-	}
-	else {
-		navBar.style.display = "";
-		logoSpan.style.display = "none";
-	}
-	document.getElementById(pageId).style.display = "";
-}
-
-document.getElementById("nav-logo-span").addEventListener("click", () => {
-	showFeedStart();
-});
-
-document.getElementById("nav-home-button").addEventListener("click", () => {
-	showFeedStart();
-});
-
-document.getElementById("nav-profile-button").addEventListener("click", () => {
-	loadProfileScreen(authID);
-});
-
-function initPost(requestBody) {
-	return {
-		method: "POST",
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify(requestBody),
-	}
-}
-
 function fetchGetUserData(user) {
 	return fetch(`http://localhost:${BACKEND_PORT}/user?userId=${user}`, {
 		method: "GET",
@@ -91,6 +35,20 @@ function fetchGetUserData(user) {
 	})
 		.then(response => response.json())
 }
+
+// Opens initial page in login screen
+loadPage("login-screen");
+
+// Initialise nav bar buttons
+document.getElementById("nav-logo-span").addEventListener("click", () => {
+	showFeedStart();
+});
+document.getElementById("nav-home-button").addEventListener("click", () => {
+	showFeedStart();
+});
+document.getElementById("nav-profile-button").addEventListener("click", () => {
+	loadProfileScreen(authID);
+});
 
 ////////////////////////
 ///// 2.1.1 Login //////
@@ -108,17 +66,10 @@ document.getElementById("btn-login").addEventListener("click", (event) => {
 	const loginEmail = loginForm.login_email.value;
 	const loginPw = loginForm.login_pw.value;
 
-	// Check email and pw aren't empty
-	if (loginEmail === "" || loginPw === "") {
-		errorOrSuccessPopup("Please enter a valid email or password.", false)
-		return;
-	}
-
 	const requestBody = {
 		"email": loginEmail,
 		"password": loginPw
 	}
-
 	fetch(`http://localhost:${BACKEND_PORT}/auth/login`, initPost(requestBody))
 		.then(response => response.json())
 		.then(data => {
@@ -147,19 +98,14 @@ document.getElementById("btn-signin").addEventListener("click", (event) => {
 	loadPage("login-screen");
 });
 
-function isValidEmailAndName(email, name) {
-	// Check if email is valid (standard email regex)
-	let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	if (!emailRegex.test(email)) {
-		return false;
-	}
-	// Check if name is valid (contains only letters and spaces)
-	let nameRegex = /^[a-zA-Z\s]+$/;
-	if (!nameRegex.test(name)) {
-		return false;
-	}
-	// If both email and name are valid, return true
-	return true;
+function isValidRegoEmail(email) {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	return emailRegex.test(email);
+}
+
+function isValidRegoName(name) {
+	const nameRegex = /^[a-zA-Z\s]+$/;
+	return nameRegex.test(name);
 }
 
 // Register account
@@ -171,14 +117,21 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 	let regoPw = regoForm.rego_pw.value;
 	let regoConfirmPw = regoForm.rego_confirm_pw.value;
 
-	if (!isValidEmailAndName(regoEmail, regoName)) {
-		errorOrSuccessPopup("Please enter a valid email and name. Names must contain only letters and spaces.", false);
+	if (!isValidRegoEmail(regoEmail)) {
+		errorOrSuccessPopup("Please enter a valid email.", false);
 		return;
 	}
-	if (regoPw === "") {
+
+	if (!isValidRegoName(regoName)) {
+		errorOrSuccessPopup("Please enter a valid name. Names must contain only letters and spaces.", false);
+		return;
+	}
+
+	if (!regoPw) {
 		errorOrSuccessPopup("Please enter a password", false)
 		return;
 	}
+
 	if (regoPw !== regoConfirmPw) {
 		errorOrSuccessPopup("Please ensure passwords match", false)
 		return;
@@ -189,15 +142,13 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 		"password": regoPw,
 		"name": regoName
 	}
-
-
 	fetch(`http://localhost:${BACKEND_PORT}/auth/register`, initPost(requestBody))
 		.then(response => response.json())
 		.then(data => {
 			if (data.error) {
-				errorOrSuccessPopup("Email address already taken", false);
+				errorOrSuccessPopup("Email address already taken. Please enter a different email.", false);
 			} else {
-				errorOrSuccessPopup('Registration successful', true);
+				errorOrSuccessPopup("Registration successful! Please log in.", true);
 				// Load login after successful registration
 				loadPage("login-screen");
 			}
@@ -209,24 +160,27 @@ document.getElementById("btn-register").addEventListener("click", (event) => {
 //////////////////////////////
 
 // Create a generic popup
-// Returns the popup content for appending children
+// Returns the popup content to append children to
 function showPopup() {
 	const popup = document.getElementById("generic-popup");
 	const popupContent = document.getElementById("generic-popup-content");
 	const closePopupSpan = document.getElementById("generic-close-span");
+
+	// Hide the popup when closed
 	closePopupSpan.addEventListener('click', () => {
-		// Hide the popup
 		popup.style.display = "None";
 	});
+
+	// Clear previous text from popup
 	while (popupContent.childNodes.length > 2) {
 		popupContent.removeChild(popupContent.lastChild);
 	}
-
 	popup.style.display = "block";
 	return popupContent;
 }
 
-// Creates an h3 with an icon
+// Used for simple one line popups
+// Returns an h3 element and an icon if requested
 function makePopupHeader(headerText, headerIconClass) {
 	const popupHeader = document.createElement("h3");
 	popupHeader.innerText = headerText;
@@ -238,6 +192,7 @@ function makePopupHeader(headerText, headerIconClass) {
 	return popupHeader;
 }
 
+// Creates either an error or success popup with inputted message as text
 function errorOrSuccessPopup(message, success) {
 	const popupContent = showPopup();
 	const popupHeader = document.createElement("h3");
@@ -266,11 +221,11 @@ function errorOrSuccessPopup(message, success) {
 ////////////////////////////// TODO: MAKE SURE TO SHOW IN REVERSE CHRONOLOGICAL
 
 function showFeedStart() {
-	// Whenever feed is accessed, reset watchEmail input
+	// Whenever feed is accessed, reset watchEmail input to hidden and empty
 	watchEmailInput.style.display = "none";
 	watchEmailInput.value = "";
 
-	// If offline, then show latest feed
+	// If offline, then show latest cached feed
 	if (disconnected) {
 		if (document.getElementById("main-page").style.display === "none") {
 			loadCachedFeed(authID);
@@ -278,7 +233,7 @@ function showFeedStart() {
 		return;
 	}
 
-
+	// Remove previous job posts
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
 	});
@@ -292,7 +247,7 @@ function showFeedStart() {
 function showFeed(startIndexNum) {
 	loadPage("main-page");
 	// Get the job feed
-	let init = {
+	const init = {
 		method: "GET",
 		headers: {
 			'Content-Type': 'application/json',
@@ -317,18 +272,24 @@ function showFeed(startIndexNum) {
 		})
 }
 
-
+// Changes iso date to DD/MM/YYYY format
 function isoToNormalDate(date) {
 	return `${date.substring(8, 10)}/${date.substring(5, 7)}/${date.substring(0, 4)}`;
 }
-//  DD/MM/YYYY
-// how many hours and minutes ago
+
+/**
+ * @param {Date} date object
+ * @returns {string} date string according to spec:
+ * If the job was posted today (in the last 24 hours), it should display how 
+ * many hours and minutes ago it was posted 
+ * If the job was posted more than 24 hours ago, it should just display the 
+ * date DD/MM/YYYY that it was posted
+ */
 function jobPostCreateDate(date) {
 	const isoDate = new Date(date);
 	const nowDate = new Date();
 	const timeSince = nowDate.getTime() - isoDate.getTime();
 	const hoursSince = Math.floor(timeSince / (1000 * 60 * 60));
-
 
 	if (hoursSince < 24) {
 		const minutesSince = Math.floor(timeSince / (1000 * 60) % 60);
@@ -339,39 +300,42 @@ function jobPostCreateDate(date) {
 	}
 }
 
+/**
+ * Generates a singular job post on main feed including the creator's name, date 
+ * posted, post content and like and comment bars
+ */
 function generatePost(jobPost) {
 	// Create Container for job post
 	const jobContainer = document.createElement("div");
 	jobContainer.setAttribute("class", "job-post");
 	jobContainer.setAttribute("id", `jobPost${jobPost.id}`);
-	// User name 
+
+	// Creates creator name
 	const creatorSpan = document.createElement("span");
 	creatorSpan.setAttribute("class", "hover-underline");
 	creatorSpan.addEventListener("click", () => loadProfileScreen(jobPost.creatorId));
-
 	fetchGetUserData(jobPost.creatorId).then(data => {
 		if (data.error) {
 			alert(data.error);
 		} else {
+			// Links the creator's name to their profile
 			creatorSpan.innerText = data.name;
 			localStorage.setItem(`id: ${jobPost.id}`, data.name);
 		}
 	})
+	jobContainer.appendChild(creatorSpan);
 
-	// Job Post Date
+	// Formats the date posted
 	const jobDateDiv = document.createElement("div");
 	const jobDate = document.createElement("p");
 	jobDate.innerText = jobPostCreateDate(jobPost.createdAt);
 	jobDate.style.color = "grey";
 	jobDateDiv.appendChild(jobDate);
-
-	jobContainer.appendChild(creatorSpan);
 	jobContainer.appendChild(jobDateDiv);
 
 	const jobContent = createJobContent(jobPost);
 	jobContainer.appendChild(jobContent);
 
-	// Likes and comments bar
 	const likeCommentBar = document.createElement("div");
 	likeCommentBar.setAttribute("class", "likes-comments-bar");
 
@@ -379,7 +343,7 @@ function generatePost(jobPost) {
 	likesDiv.setAttribute("class", "likes");
 
 	const likeSpan = document.createElement("span");
-	// Check if post has been liked by current user
+	// Check if post has been liked by current user and set dynamic like button
 	const isLiked = jobPost.likes.some((user) => user.userId === authID);
 	const likeIcon = document.createElement("i");
 	if (isLiked) {
@@ -391,11 +355,9 @@ function generatePost(jobPost) {
 		likeSpan.removeAttribute("liked");
 	}
 	likeSpan.appendChild(likeIcon);
-
 	likeSpan.setAttribute("id", `${authID}${jobPost.id}`);
 	likeSpan.addEventListener("click", () => likePost(jobPost.id, `${authID}${jobPost.id}`, likeIcon));
 
-	// Number of likes
 	const numLikes = document.createElement("p");
 	numLikes.setAttribute("id", `numLikes${jobPost.id}`)
 	numLikes.innerText = `  ${jobPost.likes.length} likes`
@@ -422,11 +384,9 @@ function generatePost(jobPost) {
 
 	const commentSection = document.createElement("div");
 	commentSection.setAttribute("id", `comments${jobPost.id}`);
-
 	generateComments(commentSection, jobPost.comments);
 	jobContainer.appendChild(commentSection);
 
-	// Post comment
 	const postCommentDiv = document.createElement("div");
 	postCommentDiv.setAttribute("class", "post-comment-div");
 
@@ -438,7 +398,7 @@ function generatePost(jobPost) {
 	postCommentBtn.setAttribute("class", "post-comment-button");
 	postCommentBtn.innerText = "Post";
 	postCommentBtn.addEventListener("click", () => {
-		// Cannot post empty comment
+		// Disallow empty comments
 		if (!addComment.value) {
 			return;
 		}
@@ -469,7 +429,6 @@ function generatePost(jobPost) {
 	postCommentDiv.appendChild(postCommentBtn);
 	jobContainer.appendChild(postCommentDiv);
 
-	// Append to main page
 	document.getElementById("main-page").appendChild(jobContainer);
 }
 
@@ -555,7 +514,6 @@ function generateComments(commentSection, comments) {
 ///// 2.3.3 Liking a job ///////////////
 ////////////////////////////////////////
 
-// Function to like post
 function likePost(postID, spanId, likeIcon) {
 	const likeSpan = document.getElementById(spanId);
 	const isLiked = likeSpan.hasAttribute("liked");
@@ -578,6 +536,7 @@ function likePost(postID, spanId, likeIcon) {
 			if (data.error) {
 				alert(data.error);
 			} else {
+				// Change like icon fill
 				if (isLiked) {
 					likeSpan.removeAttribute("liked");
 					likeIcon.setAttribute("class", "fa-regular fa-thumbs-up");
@@ -595,7 +554,6 @@ function likePost(postID, spanId, likeIcon) {
 ////////////////////////////////////////
 
 function loadProfileScreen(userId) {
-	// Make a get request to get user info
 	fetchGetUserData(userId).then(data => {
 		if (data.error) {
 			alert(data.error);
@@ -612,14 +570,16 @@ function loadProfileScreen(userId) {
 function generateProfile(userData, isOwnProfile) {
 	loadPage("profile-page");
 
-	if (isOwnProfile) document.getElementById("update-profile-div").style.display = "";
-	else document.getElementById("update-profile-div").style.display = "none";
+	const updateProfileDiv = document.getElementById("update-profile-div");
+
+	if (isOwnProfile) updateProfileDiv.style.display = "";
+	else updateProfileDiv.style.display = "none";
 
 	document.getElementById("profile-name").innerText = userData.name;
 	document.getElementById("profile-email").innerText = userData.email;
 
 	let profileImg = document.getElementById("profile-img");
-	// TODO: Bonus default image
+	// Sets a default image if no inputted user image
 	if (userData.image === undefined) {
 		profileImg.src = "images/defaultprofile.jpg";
 	}
@@ -632,7 +592,7 @@ function generateProfile(userData, isOwnProfile) {
 	let numWatchers = document.getElementById("profile-num-watchers");
 	profileInfo.removeChild(numWatchers);
 
-	// Removes watch button from own profile
+	// Removes previous load watch button
 	let watchButton = document.getElementById("watch-button");
 	if (watchButton !== null) {
 		profileInfo.removeChild(watchButton);
@@ -649,7 +609,7 @@ function generateProfile(userData, isOwnProfile) {
 	// Add button to watch/unwatch
 	let newWatchButton = document.createElement("button");
 	newWatchButton.setAttribute("id", "watch-button");
-	// Check if user is currently watching
+	// Check if user is currently watching and update watch button
 	const isWatched = userData.watcheeUserIds.some((watcher) => watcher === authID);
 	if (isWatched) {
 		newWatchButton.innerText = "✔️ Watching";
@@ -659,21 +619,19 @@ function generateProfile(userData, isOwnProfile) {
 		newWatchButton.innerText = "➕ Watch";
 		newWatchButton.removeAttribute("watching")
 	}
+	newWatchButton.addEventListener("click", () => watchUser(userData.email, "watch-button"));
 	profileInfo.appendChild(newWatchButton);
 
-	// newWatchButton.setAttribute("id", `${authID}${userData.id}`);
-	newWatchButton.addEventListener("click", () => watchUser(userData.email, "watch-button"));
-
 	// Create job
+	// Button only appears on own profile
 	if (isOwnProfile) {
-		// function to hide and unhide
 		document.getElementById("create-job-container").style.display = "block";
 	} else {
 		document.getElementById("create-job-container").style.display = "None";
 	}
 
 	// Generate jobs
-	// Delete job postings first
+	// Delete previous load job postings first
 	Array.from(document.getElementsByClassName("job-post")).forEach((jobPost) => {
 		jobPost.remove();
 	});
@@ -709,21 +667,14 @@ function generateProfile(userData, isOwnProfile) {
 		const jobContent = createJobContent(jobPost);
 		jobContainer.appendChild(jobContent);
 
-
 		profilePage.appendChild(jobContainer);
 	});
 }
 
 // Show watchers
-
 function displayWatchers(watcheeIds) {
 	const popupContent = showPopup();
-
 	popupContent.appendChild(makePopupHeader("Watchers ", "fa-solid fa-eye"));
-
-	Array.from(document.getElementsByClassName("watcher")).forEach((user) => {
-		user.remove();
-	});
 
 	for (const id of watcheeIds) {
 		const user = document.createElement("span");

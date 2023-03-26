@@ -5,7 +5,11 @@ Notif toggle button
 
 Default profile picture
 
+Dark mode
 
+Log out
 
+Success popups
+Nav bar icon colours
 
-TODO: Dark mode
+Dynamic like button
