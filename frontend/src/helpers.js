@@ -64,6 +64,16 @@ export function loadPage(pageId) {
     document.getElementById(pageId).style.display = "";
 }
 
+export function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+export function isValidName(name) {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    return nameRegex.test(name);
+}
+
 export function initPost(requestBody) {
     return {
         method: "POST",
@@ -74,3 +84,22 @@ export function initPost(requestBody) {
     }
 }
 
+export function fetchGetUserData(user) {
+    return fetch(`http://localhost:${BACKEND_PORT}/user?userId=${user}`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem("token")
+        }
+    })
+        .then(response => response.json())
+}
+
+export function createInputDom(inputId, inputPlaceholder, inputType, inputAccept) {
+    const newInput = document.createElement("input");
+    newInput.setAttribute("id", inputId);
+    newInput.setAttribute("placeholder", inputPlaceholder);
+    newInput.setAttribute("type", inputType);
+    newInput.setAttribute("accept", inputAccept);
+    return newInput;
+}
