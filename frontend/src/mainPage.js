@@ -37,13 +37,13 @@ function loadPage(pageId) {
 		document.getElementById("nav-home-button").style.color = "rgb(102, 52, 127)";
 	}
 	else {
-		document.getElementById("nav-home-button").style.color = "black";
+		document.getElementById("nav-home-button").style.color = "var(--color-text)";
 	}
 	if (pageId === "profile-page") {
 		document.getElementById("nav-profile-button").style.color = "rgb(102, 52, 127)";
 	}
 	else {
-		document.getElementById("nav-profile-button").style.color = "black";
+		document.getElementById("nav-profile-button").style.color = "var(--color-text)";
 	}
 
 	const navBar = document.getElementById("nav");
