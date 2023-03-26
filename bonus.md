@@ -1,4 +1,4 @@
-Notification toggle button 
+Notification toggle button
 Button in navigation bar toggles notifications on or off
 so users have a choice - by default notifications are off, please turn them
 on to test the feature. The button also changes according to the mode.
@@ -30,4 +30,9 @@ When the main feed is open, the home icon will turn purple and when a profile
 is open, the profile icon will turn purple.
 
 Restraints on email and name
-Name and email have regexes assigned so they are consistent across the platform
+Name and email have regexe if statements assigned so they are consistent across the platform.
+
+Update profile and job prefilled
+Update inputs prefilled with previous inputs for better user experience.
+
+Job start date in format DD/MM/YYYY
